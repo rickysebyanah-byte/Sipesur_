@@ -1994,7 +1994,7 @@ app.get(
         status: 'online',
         node_version: process.version,
         uptime_seconds: Math.floor(process.uptime()),
-        db_mode: db.isLocalMode() ? 'Local Storage Fallback (Offline Mode)' : 'Supabase PostgreSQL Cloud',
+        db_mode: db.isLocalMode() ? 'Local Storage Fallback (Offline Mode)' : 'PostgreSQL Cloud',
         is_local_mode: db.isLocalMode(),
         upload_policy: 'Tanpa Batasan Ukuran (Unlimited Media)',
         auth_method: 'JWT Bearer + Query Token',
