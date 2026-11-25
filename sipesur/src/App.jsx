@@ -42,6 +42,54 @@ const COL_WARGA = {
   ditolak: 'bg-rose-50 text-rose-900 border-rose-400',
 };
 
+const ROLE_LABEL = {
+  admin: 'IT Administrator Sistem',
+  lurah: 'Pimpinan Kelurahan (Lurah)',
+  petugas: 'Staf Pelayanan & Tata Usaha',
+  warga: 'Warga Pemohon',
+};
+
+const ROLE_THEME = {
+  warga: {
+    border: 'border-emerald-700',
+    navActive: 'border-emerald-700 bg-emerald-50 font-bold text-emerald-950',
+    pill: 'bg-emerald-100 text-emerald-900 border-emerald-300',
+    profileBox: 'bg-emerald-50/40',
+    brandText: 'text-emerald-900',
+    mainBg: 'bg-emerald-50/25',
+    bar: 'bg-emerald-600',
+  },
+  petugas: {
+    border: 'border-sky-700',
+    navActive: 'border-sky-700 bg-sky-50 font-bold text-sky-950',
+    pill: 'bg-sky-100 text-sky-900 border-sky-300',
+    profileBox: 'bg-sky-50/40',
+    brandText: 'text-sky-900',
+    mainBg: 'bg-sky-50/25',
+    bar: 'bg-sky-600',
+  },
+  lurah: {
+    border: 'border-indigo-800',
+    navActive: 'border-indigo-700 bg-indigo-50 font-bold text-indigo-950',
+    pill: 'bg-indigo-100 text-indigo-900 border-indigo-300',
+    profileBox: 'bg-indigo-50/40',
+    brandText: 'text-indigo-950',
+    mainBg: 'bg-indigo-50/25',
+    bar: 'bg-indigo-600',
+  },
+  admin: {
+    border: 'border-violet-700',
+    navActive: 'border-violet-700 bg-violet-50 font-bold text-violet-950',
+    pill: 'bg-violet-100 text-violet-900 border-violet-300',
+    profileBox: 'bg-violet-50/40',
+    brandText: 'text-violet-950',
+    mainBg: 'bg-violet-50/25',
+    bar: 'bg-violet-600',
+  },
+};
+
+const WARGA_LOCKED_PATHS = ['/app/ajukan', '/app/pengajuan', '/app/surat'];
+
 const MENU = {
   warga: [
     ['/app', 'Beranda'],
@@ -52,49 +100,36 @@ const MENU = {
     ['/app/profil', 'Profil kependudukan'],
   ],
   petugas: [
-    ['/app', 'Beranda'],
-    ['/app/verifikasi-warga', 'Verifikasi warga'],
-    ['/app/pengajuan', 'Pemeriksaan surat warga'],
-    ['/app/surat-masuk', 'Surat masuk dan disposisi'],
-    ['/app/surat-keluar', 'Surat keluar dan balasan'],
-    ['/app/arsip', 'Arsip surat warga'],
-    ['/app/profil-desa', 'Profil Desa & Kop'],
+    ['/app', 'Beranda Loket'],
+    ['/app/verifikasi-warga', 'Verifikasi Akun Warga'],
+    ['/app/pengajuan', 'Pemeriksaan Surat Warga'],
+    ['/app/surat-masuk', 'Surat Masuk & Balasan'],
+    ['/app/surat-keluar', 'Surat Keluar Kedinasan'],
+    ['/app/arsip', 'Arsip Surat Warga'],
     ['/app/berita', 'Berita & Pengumuman'],
     ['/app/umkm', 'Direktori UMKM'],
     ['/app/galeri', 'Galeri Kegiatan'],
-    ['/app/anggaran', 'Transparansi Anggaran'],
-    ['/app/profil', 'Profil & Tanda Tangan'],
+    ['/app/profil', 'Profil & Paraf Petugas'],
   ],
   lurah: [
-    ['/app', 'Beranda'],
-    ['/app/verifikasi-warga', 'Verifikasi warga'],
-    ['/app/pengajuan', 'Persetujuan surat warga'],
-    ['/app/surat-keluar', 'Buat surat keluar'],
-    ['/app/surat-masuk', 'Disposisi surat masuk'],
-    ['/app/arsip', 'Arsip surat warga'],
-    ['/app/profil-desa', 'Profil Desa & Kop'],
-    ['/app/berita', 'Berita & Pengumuman'],
-    ['/app/umkm', 'Direktori UMKM'],
-    ['/app/galeri', 'Galeri Kegiatan'],
-    ['/app/anggaran', 'Transparansi Anggaran'],
-    ['/app/profil', 'Profil & Tanda Tangan Lurah'],
+    ['/app', 'Beranda Pimpinan'],
+    ['/app/pengajuan', 'ACC & TTE Surat Warga'],
+    ['/app/surat-masuk', 'Disposisi Surat Masuk'],
+    ['/app/surat-keluar', 'Surat Dinas Keluar'],
+    ['/app/verifikasi-warga', 'Supervisi Warga'],
+    ['/app/arsip', 'Arsip Surat Resmi'],
+    ['/app/anggaran', 'Anggaran Kelurahan'],
+    ['/app/berita', 'Berita & Kebijakan'],
+    ['/app/profil-desa', 'Identitas & Kop Lurah'],
+    ['/app/profil', 'Profil & TTE Lurah'],
   ],
   admin: [
-    ['/app', 'Beranda'],
-    ['/app/verifikasi-warga', 'Verifikasi warga'],
-    ['/app/pengajuan', 'Pengajuan surat warga'],
-    ['/app/surat-masuk', 'Surat masuk dan disposisi'],
-    ['/app/surat-keluar', 'Surat keluar dan balasan'],
-    ['/app/arsip', 'Arsip surat warga'],
-    ['/app/profil-desa', 'Profil Desa & Kop'],
-    ['/app/berita', 'Berita & Pengumuman'],
-    ['/app/umkm', 'Direktori UMKM'],
-    ['/app/galeri', 'Galeri Kegiatan'],
-    ['/app/anggaran', 'Transparansi Anggaran'],
-    ['/app/pengguna', 'Manajemen pengguna'],
-    ['/app/jenis', 'Jenis surat'],
-    ['/app/log', 'Log aktivitas'],
-    ['/app/profil', 'Profil saya'],
+    ['/app', 'Beranda IT & Sistem'],
+    ['/app/pengguna', 'Manajemen Pengguna & Peran'],
+    ['/app/jenis', 'Master Surat & Template'],
+    ['/app/profil-desa', 'Konfigurasi Portal & Kop'],
+    ['/app/log', 'Audit Log & Keamanan'],
+    ['/app/profil', 'Profil & Keamanan IT'],
   ],
 };
 
@@ -261,17 +296,40 @@ function Provider({ children }) {
     localStorage.setItem('user', JSON.stringify(u));
     setUser(u);
   };
-  const updateUser = (patch) => {
+  const updateUser = useCallback((patch) => {
     setUser((prev) => {
+      if (!prev) return prev;
       const updated = { ...prev, ...patch };
       localStorage.setItem('user', JSON.stringify(updated));
       return updated;
     });
-  };
-  const logout = () => {
+  }, []);
+  const logout = useCallback(() => {
     localStorage.clear();
     setUser(null);
-  };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token || !user) return;
+    api.get('/me')
+      .then((res) => {
+        if (res.data) {
+          updateUser({
+            nama: res.data.nama,
+            role: res.data.role,
+            jabatan: res.data.jabatan,
+            nip: res.data.nip,
+            status_verifikasi: res.data.status_verifikasi,
+            catatan_verifikasi: res.data.catatan_verifikasi,
+            must_change_password: Boolean(res.data.must_change_password),
+            nik_masked: res.data.nik_masked,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return <Ctx.Provider value={{ user, login, logout, updateUser }}>{children}</Ctx.Provider>;
 }
 
@@ -1122,8 +1180,8 @@ function Login() {
       <details className="mt-5 border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
         <summary className="cursor-pointer font-bold text-slate-900">Akun uji coba</summary>
         <ul className="mt-2 space-y-1">
-          <li>Admin: <code className="font-bold">admin</code></li>
-          <li>Petugas: <code className="font-bold">petugas</code></li>
+          <li>IT Admin: <code className="font-bold">admin</code></li>
+          <li>Petugas Loket: <code className="font-bold">petugas</code></li>
           <li>Lurah: <code className="font-bold">lurah</code></li>
           <li>Warga: <code className="font-bold">3201010101900001</code></li>
         </ul>
@@ -1524,10 +1582,11 @@ function Layout() {
   const unread = (n || []).filter((x) => !x.dibaca).length;
   const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi']];
   const namaDesaNav = desa?.nama_desa || 'Pelayanan Kelurahan';
+  const theme = ROLE_THEME[user?.role] || ROLE_THEME.warga;
 
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 md:flex-row">
-      <header className="z-30 flex flex-shrink-0 items-center justify-between border-b-[6px] border-double border-brand-800 bg-white px-4 py-2.5 md:hidden">
+      <header className={`z-30 flex flex-shrink-0 items-center justify-between border-b-[6px] border-double ${theme.border} bg-white px-4 py-2.5 md:hidden`}>
         <div className="flex items-center gap-2">
           {desa?.logo_url ? (
             <img src={desa.logo_url} alt="Logo" className="w-7 h-7 object-contain rounded-xs" />
@@ -1537,7 +1596,7 @@ function Layout() {
             </div>
           )}
           <div>
-            <div className="font-serif text-lg font-bold leading-none text-brand-900">SIPESUR</div>
+            <div className={`font-serif text-lg font-bold leading-none ${theme.brandText}`}>SIPESUR</div>
             <div className="mt-0.5 text-xs text-slate-600 truncate max-w-[170px]">{namaDesaNav}</div>
           </div>
         </div>
@@ -1568,7 +1627,7 @@ function Layout() {
           (open ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
         }
       >
-        <div className="flex-shrink-0 border-b-[6px] border-double border-brand-800 px-4 py-4">
+        <div className={`flex-shrink-0 border-b-[6px] border-double ${theme.border} px-4 py-4`}>
           <div className="flex items-center gap-2.5">
             {desa?.logo_url ? (
               <img src={desa.logo_url} alt="Logo" className="w-8 h-8 object-contain rounded-xs" />
@@ -1578,42 +1637,55 @@ function Layout() {
               </div>
             )}
             <div className="min-w-0">
-              <div className="font-serif text-xl font-bold leading-none text-brand-900 tracking-tight">SIPESUR</div>
+              <div className={`font-serif text-xl font-bold leading-none tracking-tight ${theme.brandText}`}>SIPESUR</div>
               <div className="mt-1 text-xs text-slate-600 truncate font-medium">{namaDesaNav}</div>
             </div>
           </div>
         </div>
 
-        <div className="flex-shrink-0 border-b border-slate-200 px-4 py-3 text-sm">
+        <div className={`flex-shrink-0 border-b border-slate-200 px-4 py-3 text-sm ${theme.profileBox}`}>
           <div className="truncate font-bold text-slate-950">{user?.nama}</div>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-slate-600">
-            <span className="capitalize">{user?.role}</span>
+            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold border ${theme.pill}`}>
+              {ROLE_LABEL[user?.role] || user?.role}
+            </span>
             {user?.role === 'warga' && <BadgeWarga s={user?.status_verifikasi} />}
           </div>
           {user?.nik_masked && <div className="mt-1 text-xs tabular-nums text-slate-600">NIK {user.nik_masked}</div>}
+          {user?.nip && <div className="mt-1 text-[11px] tabular-nums text-slate-500">NIP. {user.nip}</div>}
         </div>
 
         <nav className="min-h-0 flex-1 overflow-y-auto py-2" onClick={() => setOpen(false)} aria-label="Menu utama">
-          {items.map(([to, l]) => (
-            <div key={to}>
-              {to === '/app/pengguna' && <div className="mx-4 my-2 border-t border-slate-200" />}
-              <NavLink
-                to={to}
-                end={to === '/app'}
-                className={({ isActive }) =>
-                  'flex items-center justify-between gap-2 border-l-4 py-2 pl-3 pr-4 text-sm ' +
-                  (isActive
-                    ? 'border-brand-700 bg-brand-50 font-bold text-brand-900'
-                    : 'border-transparent text-slate-800 hover:bg-slate-100')
-                }
-              >
-                <span>{l}</span>
-                {to === '/app/notifikasi' && unread > 0 && (
-                  <span className="badge border-cap bg-white text-cap">{unread}</span>
-                )}
-              </NavLink>
-            </div>
-          ))}
+          {items.map(([to, l]) => {
+            const isLocked = isPendingWarga && WARGA_LOCKED_PATHS.includes(to);
+            return (
+              <div key={to}>
+                {to === '/app/pengguna' && <div className="mx-4 my-2 border-t border-slate-200" />}
+                <NavLink
+                  to={to}
+                  end={to === '/app'}
+                  className={({ isActive }) =>
+                    'flex items-center justify-between gap-2 border-l-4 py-2 pl-3 pr-4 text-sm transition-colors ' +
+                    (isActive
+                      ? theme.navActive
+                      : isLocked
+                      ? 'border-transparent text-slate-400 hover:bg-slate-50'
+                      : 'border-transparent text-slate-800 hover:bg-slate-100')
+                  }
+                >
+                  <span className="truncate">{l}</span>
+                  {isLocked && (
+                    <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-semibold" title="Terkunci hingga akun diverifikasi">
+                      🔒
+                    </span>
+                  )}
+                  {to === '/app/notifikasi' && unread > 0 && (
+                    <span className="badge border-cap bg-white text-cap">{unread}</span>
+                  )}
+                </NavLink>
+              </div>
+            );
+          })}
         </nav>
 
         <div className="pb-safe flex-shrink-0 border-t border-slate-200 px-2 py-2">
@@ -1637,7 +1709,7 @@ function Layout() {
         </div>
       </aside>
 
-      <main className="h-screen min-h-0 w-full min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <main className={`h-screen min-h-0 w-full min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 ${theme.mainBg}`}>
         <div className="mx-auto w-full max-w-6xl space-y-5 pb-16">
           {isPendingWarga && (
             <div role="status" className="border border-amber-300 border-l-4 border-l-amber-700 bg-amber-50 p-4 text-sm text-amber-950">
@@ -1782,7 +1854,7 @@ function ModalGantiPassword({ onClose, onSuccess }) {
 const Guard = () => (useAuth().user ? <Layout /> : <Navigate to="/login" />);
 const Only = ({ r, children }) => (useAuth().user && r.includes(useAuth().user.role) ? children : <Navigate to="/app" />);
 
-const Bars = ({ t, rows }) => {
+const Bars = ({ t, rows, barColor = 'bg-brand-700' }) => {
   const mx = Math.max(1, ...(rows || []).map((r) => r.n || 0));
   return (
     <Card title={t}>
@@ -1794,9 +1866,9 @@ const Bars = ({ t, rows }) => {
                 <span className="font-medium text-slate-700">{r.nama}</span>
                 <b className="tabular-nums text-slate-900">{r.n}</b>
               </div>
-              <div className="h-2 rounded-sm bg-slate-200 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden">
                 <div
-                  className="h-2 rounded-sm bg-brand-700"
+                  className={`h-2.5 rounded-full ${barColor} transition-all duration-300`}
                   style={{ width: `${Math.min(100, Math.round(((r.n || 0) / mx) * 100))}%` }}
                 />
               </div>
@@ -1875,104 +1947,696 @@ function BeritaWargaDashboard() {
   );
 }
 
-function Dashboard() {
-  const { user } = useAuth();
-  const [s] = useGet('/stats');
-  if (!s) return <p className="text-sm text-slate-500 py-8 text-center">Memuat ringkasan…</p>;
-  const st = s.status || {};
+function VerifikasiDiperlukanGate({ user, title = 'Layanan Pengajuan Surat Terkunci Sementara' }) {
+  return (
+    <Card title={title} subtitle="Status Aktivasi Akun Kependudukan Warga Kelurahan Suka Maju">
+      <div className="space-y-5">
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950 space-y-2">
+          <div className="flex items-center gap-2 font-bold text-amber-900 text-base">
+            <span>🔒</span>
+            <span>Akun Anda Menunggu Verifikasi Petugas Loket</span>
+          </div>
+          <p className="text-slate-700 leading-relaxed">
+            Demi validitas data kependudukan dan keamanan dokumen resmi kelurahan, fitur <strong>pengajuan surat, pelacakan permohonan aktif, dan unduh surat terbit</strong> hanya dibuka setelah akun Anda diverifikasi oleh Petugas Pelayanan Kelurahan.
+          </p>
+        </div>
 
-  const now = new Date();
-  const dateStr = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        {/* Stepper Verifikasi Akun 3 Langkah */}
+        <div className="grid gap-3 sm:grid-cols-3 text-xs">
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3.5 flex items-start gap-2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-emerald-600 text-white font-bold flex-shrink-0">✓</span>
+            <div>
+              <div className="font-bold text-emerald-950">1. Pendaftaran Terkirim</div>
+              <div className="text-emerald-800/90 mt-0.5">NIK {user?.nik_masked || '-'} sudah tercatat di sistem.</div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 flex items-start gap-2.5 ring-1 ring-amber-300">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-600 text-white font-bold flex-shrink-0 animate-pulse">2</span>
+            <div>
+              <div className="font-bold text-amber-950">2. Validasi Petugas Loket</div>
+              <div className="text-amber-800 mt-0.5">Petugas sedang memeriksa kecocokan data NIK &amp; No. KK Anda.</div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3.5 flex items-start gap-2.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-300 text-slate-700 font-bold flex-shrink-0">🔒</span>
+            <div>
+              <div className="font-bold text-slate-700">3. Layanan Surat Aktif</div>
+              <div className="text-slate-500 mt-0.5">Ajukan &amp; unduh surat resmi setelah status Terverifikasi.</div>
+            </div>
+          </div>
+        </div>
 
-  // 4 Kartu Metrik Cantik dengan Aksen Warna Lembut
+        <div className="rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <b className="text-slate-800 block">Yang dapat Anda lakukan saat ini:</b>
+            <span>Periksa kembali kesesuaian NIK, alamat, atau nomor WhatsApp Anda agar proses verifikasi petugas lebih cepat, atau baca pengumuman kelurahan terbaru.</span>
+          </div>
+          <div className="flex flex-wrap gap-2 flex-shrink-0">
+            <Link to="/app/profil" className="btn btn-p text-xs py-2 px-3.5 font-bold">
+              Periksa Profil Kependudukan
+            </Link>
+            <Link to="/app/berita" className="btn btn-o text-xs py-2 px-3.5 font-semibold">
+              Berita Kelurahan
+            </Link>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function DashboardAdminIT({ user, dateStr }) {
+  const [sys] = useGet('/admin/system-status');
+  if (!sys || !sys.server) return <p className="text-sm text-slate-500 py-8 text-center">Memuat konsol sistem IT…</p>;
+
+  const byRole = sys.users?.by_role || {};
+  const roleRows = [
+    { nama: 'Warga Terdaftar', n: byRole.warga || 0 },
+    { nama: 'Petugas Pelayanan & Tata Usaha', n: byRole.petugas || 0 },
+    { nama: 'Pimpinan Kelurahan (Lurah)', n: byRole.lurah || 0 },
+    { nama: 'IT Administrator Sistem', n: byRole.admin || 0 },
+  ];
+
   const metrics = [
-    { label: 'Semua pengajuan', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0) + (st.approved || 0) + (st.issued || 0), desc: 'Seluruh berkas yang masuk', badge: 'bg-slate-100 text-slate-700', icon: 'file' },
-    { label: 'Sedang diproses', value: (st.under_review || 0) + (st.pending_approval || 0), desc: 'Diperiksa atau menunggu lurah', badge: 'bg-sky-50 text-sky-700 border border-sky-200', icon: 'clock' },
-    { label: 'Surat terbit', value: st.issued || 0, desc: 'Sudah disahkan dan bisa diunduh', badge: 'bg-emerald-50 text-emerald-800 border border-emerald-200', icon: 'check' },
-    { label: 'Perlu perbaikan', value: (st.revision_required || 0) + (st.rejected || 0), desc: 'Direvisi atau ditolak', badge: 'bg-amber-50 text-amber-800 border border-amber-200', icon: 'alert' },
+    {
+      label: 'Total Akun Sistem',
+      value: sys.users?.total || 0,
+      desc: `${sys.users?.aktif || 0} aktif • ${sys.users?.nonaktif || 0} nonaktif`,
+      accent: 'border-t-4 border-t-slate-800',
+    },
+    {
+      label: 'Status Akun Warga',
+      value: sys.users?.warga_verifikasi?.terverifikasi || 0,
+      desc: `Terverifikasi • ${sys.users?.warga_verifikasi?.menunggu || 0} menunggu`,
+      accent: 'border-t-4 border-t-emerald-600',
+    },
+    {
+      label: 'Master Jenis Surat',
+      value: sys.master?.jenis_aktif || 0,
+      desc: `Aktif dari ${sys.master?.jenis_total || 0} jenis • ${sys.master?.persyaratan_total || 0} syarat`,
+      accent: 'border-t-4 border-t-brand-700',
+    },
+    {
+      label: 'Jejak Audit Log',
+      value: sys.security?.total_logs || 0,
+      desc: `${sys.security?.logs_today || 0} aktivitas tercatat hari ini`,
+      accent: 'border-t-4 border-t-indigo-600',
+    },
   ];
 
   return (
     <div className="space-y-5">
-      <div>
-        <p className="text-sm text-slate-500">{dateStr}</p>
-        <h1 className="mt-1 font-serif text-2xl font-semibold text-slate-950 sm:text-3xl">
-          {user.nama}
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          {user.role === 'warga'
-            ? 'Status pengajuan dan surat yang sudah terbit.'
-            : user.role === 'petugas'
-            ? 'Berkas warga yang perlu diperiksa.'
-            : user.role === 'lurah'
-            ? 'Surat yang menunggu pengesahan dan disposisi.'
-            : 'Ringkasan pelayanan surat Kelurahan Suka Maju.'}
-          <span className="ml-2 capitalize text-slate-500">({user.role})</span>
-        </p>
-      </div>
-
-      <div className="grid grid-cols-2 border border-slate-200 bg-white sm:grid-cols-4">
-        {metrics.map((m) => (
-          <div key={m.label} className="border-b border-r border-slate-200 p-4 last:border-r-0 sm:border-b-0 [&:nth-child(2)]:border-r-0 sm:[&:nth-child(2)]:border-r">
-            <div className="text-2xl font-semibold text-slate-950">{m.value}</div>
-            <div className="mt-1 text-sm font-medium text-slate-800">{m.label}</div>
-            <div className="mt-0.5 text-xs text-slate-500">{m.desc}</div>
+      {/* Banner Pusat Kendali IT */}
+      <div className="rounded-2xl border border-violet-900/40 bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 text-white p-5 sm:p-6 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3 py-0.5 text-[11px] font-bold text-emerald-300 mb-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>KONSOL IT ADMINISTRATOR • SISTEM ONLINE</span>
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-300">
+              {user.jabatan || 'Pranata Komputer / IT Administrator SIPESUR'} • {dateStr}
+            </p>
           </div>
-        ))}
+          <div className="flex flex-wrap gap-2">
+            <Link to="/app/pengguna" className="rounded-lg bg-white text-slate-900 hover:bg-slate-100 px-3.5 py-2 text-xs font-bold transition-colors">
+              + Kelola Akun &amp; Role
+            </Link>
+            <Link to="/app/jenis" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-semibold transition-colors">
+              Konfigurasi Template Surat
+            </Link>
+          </div>
+        </div>
       </div>
 
-      {/* ── GRAFIK STATISTIK ── */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Bars t="Pengajuan per jenis surat" rows={s.jenis || []} />
-        <Bars t="Pengajuan 6 bulan terakhir" rows={s.bulan || []} />
+      {/* 4 Kartu Metrik IT */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {metrics.map((m, i) => {
+          const cardTints = ['from-white to-violet-50/40', 'from-white to-emerald-50/40', 'from-white to-sky-50/40', 'from-white to-amber-50/40'];
+          const pillTints = ['bg-violet-50 text-violet-700 border-violet-200', 'bg-emerald-50 text-emerald-700 border-emerald-200', 'bg-sky-50 text-sky-700 border-sky-200', 'bg-amber-50 text-amber-700 border-amber-200'];
+          const icons = ['👥', '🛡️', '📋', '🔐'];
+          return (
+            <div key={m.label} className={`rounded-xl border border-slate-200 bg-gradient-to-br ${cardTints[i % 4]} p-4 shadow-2xs ${m.accent}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-2xl font-bold text-slate-950 tabular-nums">{m.value}</div>
+                <span className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm shrink-0 ${pillTints[i % 4]}`}>
+                  {icons[i % 4]}
+                </span>
+              </div>
+              <div className="mt-1.5 text-sm font-bold text-slate-800">{m.label}</div>
+              <div className="mt-0.5 text-[11px] text-slate-500">{m.desc}</div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* ── KHUSUS LURAH: PANEL TINDAKAN CEPAT PERSURATAN ── */}
-      {user.role === 'lurah' && (
-        <Card
-          title="Pekerjaan lurah"
-          subtitle="Pintasan ke surat yang menunggu keputusan Anda"
-        >
-          <ul className="divide-y divide-slate-200 border-y border-slate-200 text-sm">
-            <li>
-              <Link to="/app/surat-keluar" className="flex items-baseline justify-between gap-3 py-3 hover:text-brand-800">
-                <span className="font-semibold text-slate-900">Buat surat dinas keluar</span>
-                <span className="text-slate-500">Edaran, undangan, tugas</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/app/pengajuan" className="flex items-baseline justify-between gap-3 py-3 hover:text-brand-800">
-                <span className="font-semibold text-slate-900">Setujui surat warga</span>
-                <span className="text-slate-500">Tanda tangan elektronik</span>
-              </Link>
-            </li>
-            <li>
-              <Link to="/app/surat-masuk" className="flex items-baseline justify-between gap-3 py-3 hover:text-brand-800">
-                <span className="font-semibold text-slate-900">Disposisi surat masuk</span>
-                <span className="text-slate-500">Instruksi ke petugas</span>
-              </Link>
-            </li>
-          </ul>
+      {/* Panel Infrastruktur & Distribusi Role */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="Kesehatan Infrastruktur & Konfigurasi Server" subtitle="Status operasional teknis layanan SIPESUR">
+          <dl className="divide-y divide-slate-100 text-xs">
+            <div className="py-2.5 flex items-center justify-between gap-3">
+              <dt className="text-slate-500 font-medium">Mesin Basis Data</dt>
+              <dd className={`font-bold px-2.5 py-0.5 rounded-full text-[11px] border ${
+                sys.server.is_local_mode
+                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              }`}>
+                {sys.server.db_mode}
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-3">
+              <dt className="text-slate-500 font-medium">Runtime &amp; Uptime API</dt>
+              <dd className="font-mono font-semibold text-slate-800">
+                Node {sys.server.node_version} • {Math.floor((sys.server.uptime_seconds || 0) / 60)}m {(sys.server.uptime_seconds || 0) % 60}s
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-3">
+              <dt className="text-slate-500 font-medium">Kebijakan Unggah Berkas</dt>
+              <dd className="font-bold text-emerald-700">{sys.server.upload_policy}</dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-3">
+              <dt className="text-slate-500 font-medium">Identitas &amp; Logo Portal</dt>
+              <dd className="font-semibold text-slate-800">
+                {sys.portal?.nama_desa} ({sys.portal?.has_logo ? 'Logo Aktif ✓' : 'Belum Pasang Logo'})
+              </dd>
+            </div>
+            <div className="py-2.5 flex items-center justify-between gap-3">
+              <dt className="text-slate-500 font-medium">Segregasi Wewenang Sistem</dt>
+              <dd className="font-semibold text-brand-700">IT Terpisah dari Pengesahan Surat Lurah ✓</dd>
+            </div>
+          </dl>
         </Card>
-      )}
 
-      {/* ── KHUSUS WARGA: PENGUMUMAN & BERITA KELURAHAN TERKINI ── */}
-      {user.role === 'warga' && (
+        <div className="space-y-4">
+          <Bars t="Distribusi Akun Pengguna per Peran" rows={roleRows} barColor={ROLE_THEME.admin.bar} />
+          <Card title="Akses Cepat Tugas IT Administrator">
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Link to="/app/pengguna" className="rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 p-3 font-bold text-slate-800 transition-colors">
+                👥 Manajemen User &amp; NIP
+              </Link>
+              <Link to="/app/jenis" className="rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 p-3 font-bold text-slate-800 transition-colors">
+                🧩 Master Form &amp; Template
+              </Link>
+              <Link to="/app/profil-desa" className="rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 p-3 font-bold text-slate-800 transition-colors">
+                🌐 Pengaturan Web &amp; Kop
+              </Link>
+              <Link to="/app/log" className="rounded-lg border border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 p-3 font-bold text-slate-800 transition-colors">
+                🛡️ Audit Keamanan Sistem
+              </Link>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      {/* Jejak Audit Terbaru */}
+      <Card
+        title="Pemantauan Audit Log Keamanan Terbaru"
+        subtitle="6 transaksi autentikasi dan perubahan sistem terakhir"
+        rightAction={
+          <Link to="/app/log" className="text-xs font-bold text-brand-700 hover:underline">
+            Lihat seluruh log →
+          </Link>
+        }
+      >
+        <Table
+          head={['Waktu', 'Pengguna', 'Aktivitas', 'Detail', 'IP Address']}
+          rows={(sys.security?.recent_logs || []).map((x) => [
+            tg(x.created_at),
+            x.nama || 'Sistem / Tamu',
+            <b key="a" className="text-navy text-xs">{x.aksi}</b>,
+            x.detail || '-',
+            x.ip || '-',
+          ])}
+        />
+      </Card>
+    </div>
+  );
+}
+
+function DashboardLurah({ user, s, dateStr }) {
+  const st = s.status || {};
+  const antreanACC = s.antrean_pengajuan || [];
+  const antreanSM = s.antrean_surat_masuk || [];
+  const totalTerbit = (st.issued || 0) + (s.sk_total || 0);
+
+  const metrics = [
+    {
+      label: 'Menunggu ACC & TTE Anda',
+      value: st.pending_approval || 0,
+      desc: 'Permohonan warga lolos verifikasi loket',
+      accent: 'border-t-4 border-t-brand-700',
+      to: '/app/pengajuan',
+    },
+    {
+      label: 'Perlu Disposisi Lurah',
+      value: s.sm_menunggu || 0,
+      desc: 'Surat dinas masuk menunggu arahan',
+      accent: 'border-t-4 border-t-amber-600',
+      to: '/app/surat-masuk',
+    },
+    {
+      label: 'Dokumen Resmi Disahkan',
+      value: totalTerbit,
+      desc: `${st.issued || 0} surat warga • ${s.sk_total || 0} surat dinas keluar`,
+      accent: 'border-t-4 border-t-emerald-600',
+      to: '/app/arsip',
+    },
+    {
+      label: 'Serapan Anggaran Kelurahan',
+      value: `${s.anggaran?.persen || 0}%`,
+      desc: `Realisasi Rp ${Number(s.anggaran?.total_realisasi || 0).toLocaleString('id-ID')}`,
+      accent: 'border-t-4 border-t-indigo-600',
+      to: '/app/anggaran',
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      {/* Banner Pimpinan Lurah */}
+      <div className="rounded-2xl border border-brand-800 bg-gradient-to-br from-brand-950 via-brand-900 to-indigo-950 text-white p-5 sm:p-6 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-1">
+              MEJA PIMPINAN • KELURAHAN SUKA MAJU MEDAN JOHOR
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-brand-100">
+              {user.jabatan || 'Lurah Suka Maju'} {user.nip ? `• NIP. ${user.nip}` : ''} • {dateStr}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {s.has_signature ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3.5 py-1.5 text-xs font-bold text-emerald-200">
+                ✓ Spesimen TTE Digital Siap
+              </span>
+            ) : (
+              <Link to="/app/profil" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 text-xs font-bold transition-colors">
+                ⚠️ Atur Tanda Tangan Lurah
+              </Link>
+            )}
+            <Link to="/app/surat-keluar" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-bold transition-colors">
+              + Terbitkan Surat Dinas
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 KPI Pimpinan */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {metrics.map((m, i) => {
+          const cardTints = ['from-white to-amber-50/40', 'from-white to-indigo-50/40', 'from-white to-emerald-50/40', 'from-white to-sky-50/40'];
+          const pillTints = ['bg-amber-50 text-amber-700 border-amber-200', 'bg-indigo-50 text-indigo-700 border-indigo-200', 'bg-emerald-50 text-emerald-700 border-emerald-200', 'bg-sky-50 text-sky-700 border-sky-200'];
+          const icons = ['✍️', '📨', '✅', '💰'];
+          return (
+            <Link key={m.label} to={m.to} className={`rounded-xl border border-slate-200 bg-gradient-to-br ${cardTints[i % 4]} p-4 shadow-2xs hover:border-indigo-400 transition-colors ${m.accent}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-2xl font-bold text-slate-950 tabular-nums">{m.value}</div>
+                <span className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm shrink-0 ${pillTints[i % 4]}`}>
+                  {icons[i % 4]}
+                </span>
+              </div>
+              <div className="mt-1.5 text-sm font-bold text-slate-800">{m.label}</div>
+              <div className="mt-0.5 text-[11px] text-slate-500">{m.desc}</div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Meja Kerja Pimpinan (2 Kolom Antrean Keputusan Lurah) */}
+      <div className="grid gap-4 lg:grid-cols-2">
         <Card
-          title="Pengumuman & Berita Kelurahan Terkini"
-          subtitle="Informasi penting, agenda dinas, dan pengumuman resmi kelurahan"
+          title="Antrean Pengesahan Surat Warga (ACC & TTE)"
+          subtitle="Permohonan warga yang telah diverifikasi lengkap oleh Petugas Loket"
           rightAction={
-            <Link to="/app/berita" className="text-xs font-bold text-brand-700 hover:underline">
-              Lihat semua pengumuman →
+            <Link to="/app/pengajuan" className="text-xs font-bold text-brand-700 hover:underline">
+              Semua antrean →
             </Link>
           }
         >
-          <BeritaWargaDashboard />
+          {antreanACC.length ? (
+            <ul className="divide-y divide-slate-100 text-xs">
+              {antreanACC.map((item) => (
+                <li key={item.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <code className="font-bold text-brand-800">{item.kode}</code>
+                      <Badge s={item.status} />
+                    </div>
+                    <div className="font-bold text-slate-900 mt-1 truncate">{item.jenis}</div>
+                    <div className="text-slate-500 mt-0.5">Pemohon: <b>{item.pemohon}</b> • {tg(item.created_at)}</div>
+                  </div>
+                  <Link
+                    to={`/app/pengajuan/${item.id}`}
+                    className="btn btn-p text-xs py-1.5 px-3 font-bold flex-shrink-0"
+                  >
+                    Periksa &amp; ACC →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-2xl mb-1">✅</div>
+              Semua permohonan surat warga yang naik ke meja Lurah sudah diputuskan.
+            </div>
+          )}
         </Card>
+
+        <Card
+          title="Surat Dinas Masuk Menunggu Disposisi Lurah"
+          subtitle="Tentukan tujuan seksi dan instruksi tindak lanjut untuk staf kelurahan"
+          rightAction={
+            <Link to="/app/surat-masuk" className="text-xs font-bold text-brand-700 hover:underline">
+              Buka agenda →
+            </Link>
+          }
+        >
+          {antreanSM.length ? (
+            <ul className="divide-y divide-slate-100 text-xs">
+              {antreanSM.map((sm) => (
+                <li key={sm.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-mono font-bold text-slate-800">{sm.nomor_surat}</div>
+                    <div className="font-bold text-slate-900 mt-0.5 truncate">{sm.perihal}</div>
+                    <div className="text-slate-500 mt-0.5">Dari: <b>{sm.pengirim}</b></div>
+                  </div>
+                  <Link
+                    to="/app/surat-masuk"
+                    className="btn bg-amber-600 hover:bg-amber-700 text-white text-xs py-1.5 px-3 font-bold flex-shrink-0"
+                  >
+                    Disposisi →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-2xl mb-1">📬</div>
+              Tidak ada surat dinas masuk yang menunggu disposisi saat ini.
+            </div>
+          )}
+        </Card>
+      </div>
+
+      {/* Grafik Pelayanan */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Bars t="Volume Layanan per Jenis Surat" rows={s.jenis || []} barColor={ROLE_THEME.lurah.bar} />
+        <Bars t="Tren Pengajuan 6 Bulan Terakhir" rows={s.bulan || []} barColor={ROLE_THEME.lurah.bar} />
+      </div>
+    </div>
+  );
+}
+
+function DashboardPetugas({ user, s, dateStr }) {
+  const st = s.status || {};
+  const antreanSurat = s.antrean_pengajuan || [];
+  const antreanWarga = s.antrean_warga || [];
+  const antreanDisposisi = s.antrean_surat_masuk || [];
+
+  const metrics = [
+    {
+      label: 'Verifikasi Akun Warga',
+      value: s.warga_pending || 0,
+      desc: `${s.warga_terverifikasi || 0} warga sudah terverifikasi`,
+      accent: 'border-t-4 border-t-amber-600',
+      to: '/app/verifikasi-warga',
+    },
+    {
+      label: 'Permohonan Baru Masuk',
+      value: st.submitted || 0,
+      desc: 'Menunggu mulai diperiksa loket',
+      accent: 'border-t-4 border-t-brand-700',
+      to: '/app/pengajuan',
+    },
+    {
+      label: 'Sedang Diperiksa Loket',
+      value: st.under_review || 0,
+      desc: `${st.pending_approval || 0} sudah diteruskan ke Lurah`,
+      accent: 'border-t-4 border-t-sky-600',
+      to: '/app/pengajuan',
+    },
+    {
+      label: 'Disposisi Lurah Aktif',
+      value: s.sm_didisposisi || 0,
+      desc: 'Instruksi Lurah siap dibuatkan balasan',
+      accent: 'border-t-4 border-t-emerald-600',
+      to: '/app/surat-masuk',
+    },
+  ];
+
+  return (
+    <div className="space-y-5">
+      {/* Banner Meja Pelayanan Petugas */}
+      <div className="rounded-2xl border border-sky-800 bg-gradient-to-br from-brand-900 via-sky-900 to-slate-900 text-white p-5 sm:p-6 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-sky-300 mb-1">
+              MEJA PELAYANAN &amp; TATA USAHA • KELURAHAN SUKA MAJU
+            </div>
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-sky-100">
+              {user.jabatan || 'Petugas Pelayanan Administrasi'} {user.nip ? `• NIP. ${user.nip}` : ''} • {dateStr}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Link to="/app/verifikasi-warga" className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 text-xs font-bold transition-colors">
+              Cek Verifikasi Warga ({s.warga_pending || 0})
+            </Link>
+            <Link to="/app/surat-masuk" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-bold transition-colors">
+              + Catat Surat Masuk
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Strip SOP Alur Pelayanan Petugas */}
+      <div className="rounded-xl border border-sky-200/80 bg-gradient-to-r from-white via-sky-50/35 to-white p-3.5 shadow-2xs">
+        <div className="text-[11px] font-bold uppercase tracking-wider text-sky-700 mb-2.5">
+          Alur Operasional Standar Petugas Kelurahan
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+          {[
+            ['1', 'Validasi Pendaftar', 'Cek NIK & No. KK warga baru', 'border-sky-200 bg-sky-50/70', 'bg-sky-600 text-white'],
+            ['2', 'Periksa Berkas Surat', 'Cek KTP, KK & lampiran pemohon', 'border-indigo-200 bg-indigo-50/60', 'bg-indigo-600 text-white'],
+            ['3', 'Ajukan ACC Lurah', 'Teruskan berkas lengkap ke Lurah', 'border-amber-200 bg-amber-50/60', 'bg-amber-600 text-white'],
+            ['4', 'Arsip & Tindak Lanjut', 'Cetak surat terbit & balas disposisi', 'border-emerald-200 bg-emerald-50/60', 'bg-emerald-600 text-white'],
+          ].map(([num, judul, sub, boxCls, numCls]) => (
+            <div key={judul} className={`rounded-lg border px-3 py-2.5 ${boxCls}`}>
+              <div className="flex items-center gap-2 font-bold text-slate-900">
+                <span className={`w-5 h-5 rounded-full text-[11px] font-bold flex items-center justify-center shrink-0 ${numCls}`}>{num}</span>
+                <span>{judul}</span>
+              </div>
+              <div className="text-[11px] text-slate-600 mt-1 pl-7">{sub}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 4 KPI Operasional */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {metrics.map((m, i) => {
+          const cardTints = ['from-white to-sky-50/40', 'from-white to-amber-50/40', 'from-white to-indigo-50/40', 'from-white to-emerald-50/40'];
+          const pillTints = ['bg-sky-50 text-sky-700 border-sky-200', 'bg-amber-50 text-amber-700 border-amber-200', 'bg-indigo-50 text-indigo-700 border-indigo-200', 'bg-emerald-50 text-emerald-700 border-emerald-200'];
+          const icons = ['🪪', '📥', '📤', '📄'];
+          return (
+            <Link key={m.label} to={m.to} className={`rounded-xl border border-slate-200 bg-gradient-to-br ${cardTints[i % 4]} p-4 shadow-2xs hover:border-sky-400 transition-colors ${m.accent}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="text-2xl font-bold text-slate-950 tabular-nums">{m.value}</div>
+                <span className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm shrink-0 ${pillTints[i % 4]}`}>
+                  {icons[i % 4]}
+                </span>
+              </div>
+              <div className="mt-1.5 text-sm font-bold text-slate-800">{m.label}</div>
+              <div className="mt-0.5 text-[11px] text-slate-500">{m.desc}</div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* 2 Panel Antrean Operasional */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card
+          title="Antrean Pemeriksaan Surat Warga"
+          subtitle="Permohonan yang perlu segera diperiksa berkas persyaratannya"
+          rightAction={
+            <Link to="/app/pengajuan" className="text-xs font-bold text-brand-700 hover:underline">
+              Semua pengajuan →
+            </Link>
+          }
+        >
+          {antreanSurat.length ? (
+            <ul className="divide-y divide-slate-100 text-xs">
+              {antreanSurat.map((item) => (
+                <li key={item.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <code className="font-bold text-navy">{item.kode}</code>
+                      <Badge s={item.status} />
+                    </div>
+                    <div className="font-bold text-slate-900 mt-1 truncate">{item.jenis}</div>
+                    <div className="text-slate-500 mt-0.5">Pemohon: <b>{item.pemohon}</b> • {tg(item.created_at)}</div>
+                  </div>
+                  <Link
+                    to={`/app/pengajuan/${item.id}`}
+                    className="btn btn-p text-xs py-1.5 px-3 font-bold flex-shrink-0"
+                  >
+                    Periksa →
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-500 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+              <div className="text-2xl mb-1">📋</div>
+              Tidak ada antrean pemeriksaan surat di loket saat ini.
+            </div>
+          )}
+        </Card>
+
+        <div className="space-y-4">
+          <Card
+            title="Pendaftar Warga Baru Menunggu Verifikasi"
+            subtitle="Validasi NIK & KK sebelum akun dapat mengajukan surat"
+            rightAction={
+              <Link to="/app/verifikasi-warga" className="text-xs font-bold text-brand-700 hover:underline">
+                Kelola warga →
+              </Link>
+            }
+          >
+            {antreanWarga.length ? (
+              <ul className="divide-y divide-slate-100 text-xs">
+                {antreanWarga.map((w) => (
+                  <li key={w.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 truncate">{w.nama}</div>
+                      <div className="text-[11px] text-slate-500">Daftar: {tg(w.created_at)}</div>
+                    </div>
+                    <Link to="/app/verifikasi-warga" className="btn bg-amber-600 hover:bg-amber-700 text-white text-[11px] py-1 px-2.5 font-bold flex-shrink-0">
+                      Verifikasi →
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-500 text-center py-4">Semua pendaftar akun warga telah diverifikasi ✓</p>
+            )}
+          </Card>
+
+          <Card
+            title="Disposisi Lurah untuk Ditindaklanjuti"
+            subtitle="Instruksi pimpinan yang menunggu pembuatan surat balasan"
+            rightAction={
+              <Link to="/app/surat-masuk" className="text-xs font-bold text-brand-700 hover:underline">
+                Buka agenda →
+              </Link>
+            }
+          >
+            {antreanDisposisi.length ? (
+              <ul className="divide-y divide-slate-100 text-xs">
+                {antreanDisposisi.map((sm) => (
+                  <li key={sm.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 truncate">{sm.perihal}</div>
+                      <div className="text-[11px] text-slate-500">No. {sm.nomor_surat} • {sm.pengirim}</div>
+                    </div>
+                    <Link to="/app/surat-masuk" className="btn btn-o text-[11px] py-1 px-2.5 font-bold flex-shrink-0">
+                      Tindak Lanjut →
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-xs text-slate-500 text-center py-4">Tidak ada disposisi aktif yang tertunda ✓</p>
+            )}
+          </Card>
+        </div>
+      </div>
+
+      {/* Grafik Beban Pelayanan */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Bars t="Permohonan per Jenis Surat" rows={s.jenis || []} barColor={ROLE_THEME.petugas.bar} />
+        <Bars t="Volume Pelayanan 6 Bulan Terakhir" rows={s.bulan || []} barColor={ROLE_THEME.petugas.bar} />
+      </div>
+    </div>
+  );
+}
+
+function DashboardWarga({ user, s, dateStr }) {
+  const st = s.status || {};
+  const isVerified = user?.status_verifikasi === 'terverifikasi';
+
+  const metrics = [
+    { label: 'Semua pengajuan', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0) + (st.approved || 0) + (st.issued || 0), desc: 'Seluruh berkas yang masuk', icon: '🗂️', top: 'border-t-emerald-500', pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { label: 'Sedang diproses', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0), desc: 'Diperiksa atau menunggu lurah', icon: '⏳', top: 'border-t-sky-500', pill: 'bg-sky-50 text-sky-700 border-sky-200' },
+    { label: 'Surat terbit', value: st.issued || 0, desc: 'Sudah disahkan dan bisa diunduh', icon: '📜', top: 'border-t-teal-600', pill: 'bg-teal-50 text-teal-700 border-teal-200' },
+    { label: 'Perlu perbaikan', value: (st.revision_required || 0) + (st.rejected || 0), desc: 'Direvisi atau ditolak', icon: '✏️', top: 'border-t-amber-500', pill: 'bg-amber-50 text-amber-700 border-amber-200' },
+  ];
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-2xl border border-emerald-900/15 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-5 sm:p-6 shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+          <div>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-emerald-50">
+              ● Portal Warga · {dateStr}
+            </span>
+            <h1 className="mt-2 font-serif text-2xl font-bold text-white sm:text-3xl">
+              {user.nama}
+            </h1>
+            <p className="mt-1 text-sm text-emerald-100/90">
+              {isVerified
+                ? 'Akun kependudukan terverifikasi. Ajukan surat resmi kelurahan kapan saja secara daring.'
+                : 'Status aktivasi akun kependudukan dan pengumuman terbaru Kelurahan Suka Maju.'}
+            </p>
+          </div>
+          {isVerified && (
+            <Link to="/app/ajukan" className="btn bg-white text-emerald-950 hover:bg-emerald-50 border border-white/60 text-xs py-2.5 px-4 font-bold self-start sm:self-auto shadow-xs">
+              + Ajukan Surat Baru
+            </Link>
+          )}
+        </div>
+      </div>
+
+      {!isVerified ? (
+        <VerifikasiDiperlukanGate user={user} title="Status Verifikasi Akun Anda" />
+      ) : (
+        <>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {metrics.map((m) => (
+              <div key={m.label} className={`rounded-xl border border-slate-200 border-t-4 ${m.top} bg-gradient-to-br from-white to-emerald-50/25 p-4 shadow-2xs`}>
+                <div className="flex items-start justify-between gap-2">
+                  <div className="text-2xl font-bold text-slate-950 tabular-nums">{m.value}</div>
+                  <span className={`w-8 h-8 rounded-lg border flex items-center justify-center text-sm shrink-0 ${m.pill}`}>
+                    {m.icon}
+                  </span>
+                </div>
+                <div className="mt-1.5 text-sm font-bold text-slate-800">{m.label}</div>
+                <div className="mt-0.5 text-[11px] text-slate-500">{m.desc}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Bars t="Pengajuan per jenis surat" rows={s.jenis || []} barColor={ROLE_THEME.warga.bar} />
+            <Bars t="Pengajuan 6 bulan terakhir" rows={s.bulan || []} barColor={ROLE_THEME.warga.bar} />
+          </div>
+        </>
       )}
 
-      {/* ── KHUSUS WARGA: SURAT TERBIT TERBARU ── */}
-      {user.role === 'warga' && (
+      <Card
+        title="Pengumuman & Berita Kelurahan Terkini"
+        subtitle="Informasi penting, agenda dinas, dan pengumuman resmi kelurahan"
+        rightAction={
+          <Link to="/app/berita" className="text-xs font-bold text-brand-700 hover:underline">
+            Lihat semua pengumuman →
+          </Link>
+        }
+      >
+        <BeritaWargaDashboard />
+      </Card>
+
+      {isVerified && (
         <Card
           title="Surat saya yang sudah terbit"
           subtitle="Siap diunduh dan dicetak"
@@ -1987,6 +2651,26 @@ function Dashboard() {
       )}
     </div>
   );
+}
+
+function Dashboard() {
+  const { user } = useAuth();
+  const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  if (user?.role === 'admin') {
+    return <DashboardAdminIT user={user} dateStr={dateStr} />;
+  }
+
+  return <DashboardPelayananLoader user={user} dateStr={dateStr} />;
+}
+
+function DashboardPelayananLoader({ user, dateStr }) {
+  const [s] = useGet('/stats');
+  if (!s) return <p className="text-sm text-slate-500 py-8 text-center">Memuat ringkasan…</p>;
+
+  if (user?.role === 'lurah') return <DashboardLurah user={user} s={s} dateStr={dateStr} />;
+  if (user?.role === 'petugas') return <DashboardPetugas user={user} s={s} dateStr={dateStr} />;
+  return <DashboardWarga user={user} s={s} dateStr={dateStr} />;
 }
 /**
  * FITUR VERIFIKASI WARGA OLEH PETUGAS & ADMIN
@@ -2199,19 +2883,7 @@ function Ajukan() {
 
   // Warga belum terverifikasi tidak bisa mengajukan surat
   if (user?.role === 'warga' && user?.status_verifikasi !== 'terverifikasi') {
-    return (
-      <Card title="Pengajuan Surat Ditutup Sementara">
-        <div className="rounded-xl border border-amber-300 bg-amber-50 p-5 text-sm text-amber-950">
-          <b className="font-bold text-amber-900 text-base">⏳ Akun Anda Belum Diverifikasi</b>
-          <p className="mt-2 text-slate-700 leading-relaxed">
-            Demi keamanan data kependudukan dan keabsahan dokumen kenegaraan, permohonan surat hanya dapat dilakukan oleh warga yang akunnya telah diverifikasi oleh petugas kelurahan.
-          </p>
-          <p className="mt-2 text-xs text-slate-500">
-            Silakan tunggu petugas memverifikasi data NIK Anda, atau hubungi petugas loket Kelurahan Suka Maju untuk informasi lebih lanjut.
-          </p>
-        </div>
-      </Card>
-    );
+    return <VerifikasiDiperlukanGate user={user} title="Pengajuan Surat Ditutup Sementara" />;
   }
 
   const j = (js || []).find((x) => String(x.id) === jid);
@@ -2323,6 +2995,10 @@ function List() {
   const [st, setSt] = useState(user?.role === 'lurah' ? 'pending_approval' : '');
   const [rows, load] = useGet('/pengajuan' + (st ? '?status=' + st : ''));
 
+  if (user?.role === 'warga' && user?.status_verifikasi !== 'terverifikasi') {
+    return <VerifikasiDiperlukanGate user={user} title="Riwayat Pengajuan Surat Terkunci" />;
+  }
+
   const handleHapusPengajuan = async (id, kode) => {
     if (!window.confirm(`Apakah Anda yakin ingin membatalkan/menghapus pengajuan dengan kode ${kode}?`)) return;
     try {
@@ -2334,15 +3010,15 @@ function List() {
   };
 
   const canDelete = (r) => {
-    if (['petugas', 'admin', 'lurah'].includes(user?.role)) return true;
+    if (['petugas', 'lurah'].includes(user?.role)) return true;
     if (user?.role === 'warga' && user?.id === r.user_id && ['submitted', 'rejected', 'revision_required'].includes(r.status)) return true;
     return false;
   };
 
   return (
     <Card
-      title="Daftar Pengajuan Surat Keterangan"
-      subtitle="Agenda permohonan surat keterangan kependudukan warga"
+      title={user?.role === 'lurah' ? 'Persetujuan & Pengesahan Surat Warga (Lurah)' : user?.role === 'petugas' ? 'Pemeriksaan Berkas Permohonan Surat Warga' : 'Daftar Pengajuan Surat Keterangan'}
+      subtitle={user?.role === 'lurah' ? 'Tinjau hasil verifikasi loket, susun naskah final, dan bubuhkan Tanda Tangan Digital' : 'Agenda permohonan surat keterangan kependudukan warga'}
       rightAction={
         <select className="inp text-xs py-1.5 max-w-xs font-medium" value={st} onChange={(e) => setSt(e.target.value)}>
           <option value="">Semua Status Pelayanan</option>
@@ -2585,6 +3261,9 @@ function Detail() {
     }
   };
 
+  if (user?.role === 'warga' && user?.status_verifikasi !== 'terverifikasi') {
+    return <VerifikasiDiperlukanGate user={user} title="Detail Permohonan Terkunci" />;
+  }
   if (!d || !d.p) return <p className="text-sm text-slate-500 py-8 text-center">Memuat rincian pengajuan surat…</p>;
   const { p } = d;
   const r = user?.role;
@@ -2881,7 +3560,7 @@ function Detail() {
           <p className="text-xs text-blue-800 leading-relaxed mb-4">
             Lurah Suka Maju telah memberikan persetujuan ACC. Klik tombol di bawah untuk menerbitkan berkas PDF resmi ber-QR Code.
           </p>
-          {['petugas', 'lurah', 'admin'].includes(r) && (
+          {['petugas', 'lurah'].includes(r) && (
             <button
               className="inline-flex items-center gap-2 rounded-lg bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs py-2 px-4"
               onClick={() => act('terbitkan')}
@@ -3039,10 +3718,10 @@ function Detail() {
       <Msg m={m} />
 
       {/* ── ACTION BAR UNTUK PETUGAS & LURAH ── */}
-      {['petugas', 'lurah', 'admin'].includes(r) && (
+      {['petugas', 'lurah'].includes(r) && (
         <Card title="Tindakan Keputusan Petugas / Lurah">
           <div className="space-y-3">
-            {['under_review', 'pending_approval'].includes(s) && (
+            {((r === 'petugas' && s === 'under_review') || (r === 'lurah' && s === 'pending_approval')) && (
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Catatan / Instruksi Resmi untuk Pemohon:
@@ -3057,12 +3736,12 @@ function Detail() {
             )}
 
             <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2.5 pt-2">
-              {['petugas', 'admin'].includes(r) && s === 'submitted' && (
+              {r === 'petugas' && s === 'submitted' && (
                 <button className="btn btn-p text-xs py-2.5 px-4 font-bold" onClick={() => act('mulai')} disabled={loadingAct}>
                   Mulai Periksa Berkas Permohonan
                 </button>
               )}
-              {['petugas', 'admin'].includes(r) && s === 'under_review' && (
+              {r === 'petugas' && s === 'under_review' && (
                 <>
                   <button className="btn bg-emerald-600 hover:bg-emerald-700 text-white text-xs py-2.5 px-4 font-bold" onClick={() => act('verifikasi', { hasil: 'lengkap', catatan: cat })} disabled={loadingAct}>
                     ✓ Lengkap (Teruskan ke Lurah)
@@ -3075,7 +3754,7 @@ function Detail() {
                   </button>
                 </>
               )}
-              {['lurah', 'admin'].includes(r) && s === 'pending_approval' && (
+              {r === 'lurah' && s === 'pending_approval' && (
                 <>
                   <button className="btn bg-brand-700 hover:bg-brand-800 text-white text-xs py-2.5 px-5 font-bold shadow-md" onClick={() => setModalLurah(true)} disabled={loadingAct}>
                     ✓ Berikan Persetujuan (ACC Lurah) & Bubuhkan TTD
@@ -3085,12 +3764,12 @@ function Detail() {
                   </button>
                 </>
               )}
-              {['petugas', 'lurah', 'admin'].includes(r) && (s === 'approved' || (!d.surat && s === 'issued')) && (
+              {['petugas', 'lurah'].includes(r) && (s === 'approved' || (!d.surat && s === 'issued')) && (
                 <button className="btn btn-p text-xs py-2.5 px-4 font-bold" onClick={() => act('terbitkan')} disabled={loadingAct}>
                   Terbitkan Surat Resmi (PDF + QR)
                 </button>
               )}
-              {['petugas', 'lurah', 'admin'].includes(r) && (
+              {['petugas', 'lurah'].includes(r) && (
                 <button
                   type="button"
                   className="btn btn-d text-xs py-2.5 px-4 font-bold flex items-center gap-1.5 ml-auto"
@@ -3173,9 +3852,14 @@ function WargaSuratList() {
 }
 
 function SuratSaya() {
+  const { user } = useAuth();
   const [rows] = useGet('/surat-saya');
   const [activePrint, setActivePrint] = useState(null);
   const [loadingPrint, setLoadingPrint] = useState(false);
+
+  if (user?.role === 'warga' && user?.status_verifikasi !== 'terverifikasi') {
+    return <VerifikasiDiperlukanGate user={user} title="Dokumen Surat Saya Terkunci" />;
+  }
 
   const handleOpenPrint = async (pengajuanId) => {
     try {
@@ -3448,7 +4132,7 @@ function SuratMasuk() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
-            {['petugas', 'admin'].includes(user?.role) && (
+            {['petugas', 'lurah'].includes(user?.role) && (
               <button
                 className="btn btn-p text-xs py-1.5 font-bold"
                 onClick={() => setModalTambah(true)}
@@ -3484,7 +4168,7 @@ function SuratMasuk() {
               >
                 Lihat Detail & Disposisi →
               </button>
-              {['petugas', 'lurah', 'admin'].includes(user?.role) && (
+              {['petugas', 'lurah'].includes(user?.role) && (
                 <button
                   type="button"
                   className="rounded-lg px-2 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors"
@@ -3589,7 +4273,7 @@ function SuratMasuk() {
                 </h3>
               </div>
               <div className="flex items-center gap-2">
-                {['petugas', 'lurah', 'admin'].includes(user?.role) && (
+                {['petugas', 'lurah'].includes(user?.role) && (
                   <button
                     type="button"
                     className="btn btn-d text-xs py-1 px-2.5 font-bold flex items-center gap-1"
@@ -3759,7 +4443,7 @@ function SuratMasuk() {
                           >
                             Unduh PDF Surat Balasan
                           </button>
-                          {['petugas', 'lurah', 'admin'].includes(user?.role) && (
+                          {['petugas', 'lurah'].includes(user?.role) && (
                             <button
                               type="button"
                               className="btn btn-d text-xs py-1 px-2.5 font-bold flex items-center gap-1"
@@ -3787,7 +4471,7 @@ function SuratMasuk() {
               )}
 
               {/* Form Pembuatan Surat Balasan */}
-              {['petugas', 'lurah', 'admin'].includes(user?.role) && (
+              {['petugas', 'lurah'].includes(user?.role) && (
                 <form onSubmit={handleKirimBalasan} className="space-y-3 bg-white p-3.5 rounded-lg border border-emerald-200">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-emerald-800 block">
@@ -3910,7 +4594,9 @@ function SuratKeluar() {
                 {r.nomor_surat_masuk}
               </span>
             ) : (
-              <span key="sm" className="text-[11px] text-brand-700 bg-blue-50 px-2 py-0.5 rounded font-medium">Inisiatif Lurah</span>
+              <span key="sm" className={`text-[11px] px-2 py-0.5 rounded font-medium ${r.pembuat_role === 'lurah' ? 'text-brand-700 bg-blue-50' : 'text-sky-700 bg-sky-50'}`}>
+                {r.pembuat_role === 'lurah' ? 'Inisiatif Lurah' : 'Tata Usaha Kelurahan'}
+              </span>
             ),
             <div key="act" className="flex items-center gap-1.5 whitespace-nowrap">
               <button
@@ -4220,7 +4906,7 @@ function Arsip() {
             >
               Unduh PDF
             </button>
-            {['petugas', 'lurah', 'admin'].includes(user?.role) && (
+            {['petugas', 'lurah'].includes(user?.role) && (
               <button
                 type="button"
                 className="rounded-lg px-2 py-1 text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition-colors"
@@ -4379,11 +5065,15 @@ function Profil() {
         </form>
       </Card>
 
-      {/* SECTION TANDA TANGAN DIGITAL UNTUK PEJABAT / LURAH / PETUGAS */}
-      {!isWarga && (
+      {/* SECTION TANDA TANGAN DIGITAL UNTUK LURAH & PETUGAS (BUKAN ADMIN IT) */}
+      {!isWarga && f.role !== 'admin' && (
         <Card
-          title="Tanda Tangan Digital Saya"
-          subtitle="Tanda tangan ini akan dibubuhkan otomatis saat Anda menyetujui surat warga atau menerbitkan surat dinas resmi"
+          title={f.role === 'lurah' ? 'Spesimen Tanda Tangan Elektronik Lurah' : 'Paraf / Tanda Tangan Digital Petugas'}
+          subtitle={
+            f.role === 'lurah'
+              ? 'Tanda tangan resmi ini akan dibubuhkan otomatis saat Lurah menyetujui surat warga atau menerbitkan surat dinas resmi'
+              : 'Spesimen paraf digital petugas administrasi loket Kelurahan Suka Maju'
+          }
         >
           <div className="space-y-4">
             <SignaturePad
@@ -4405,6 +5095,14 @@ function Profil() {
                 {savingSig ? 'Menyimpan Tanda Tangan…' : '💾 Simpan Tanda Tangan Digital Saya'}
               </button>
             </div>
+          </div>
+        </Card>
+      )}
+
+      {f.role === 'admin' && (
+        <Card title="Wewenang Akun IT Administrator" subtitle="Pemisahan tugas keamanan (Segregation of Duties)">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 leading-relaxed">
+            <strong>🛡️ Fokus Peran IT Kelurahan:</strong> Akun IT Administrator mengelola manajemen pengguna, konfigurasi master formulir surat, identitas web portal, serta audit keamanan sistem. Sesuai tata kelola pemerintahan, pengesahan dan penandatanganan surat dinas merupakan kewenangan eksklusif <strong>Lurah</strong>.
           </div>
         </Card>
       )}
@@ -4679,8 +5377,8 @@ function Pengguna() {
   return (
     <div className="space-y-4">
       <Card
-        title="Tambah Akun Pemerintahan (Kedinasan)"
-        subtitle="Akun Petugas, Lurah, dan Admin dibuat resmi oleh Administrator dengan password sementara."
+        title="Tambah Akun Pemerintahan (Kedinasan) — Panel IT Administrator"
+        subtitle="Kelola pembagian hak akses pegawai (Petugas Loket, Lurah Pimpinan, atau Staf IT) dengan password sementara."
       >
         <form onSubmit={add} className="space-y-3">
           <div className="grid gap-3 sm:grid-cols-3">
@@ -4692,9 +5390,9 @@ function Pengguna() {
             </Field>
             <Field l="Peran / Role" req>
               <select className="inp" value={f.role} onChange={set('role')}>
-                <option value="petugas">Petugas Pelayanan</option>
-                <option value="lurah">Lurah</option>
-                <option value="admin">Administrator</option>
+                <option value="petugas">Petugas Pelayanan &amp; Tata Usaha</option>
+                <option value="lurah">Lurah (Pimpinan &amp; Penandatangan)</option>
+                <option value="admin">IT Administrator Sistem</option>
               </select>
             </Field>
           </div>
@@ -4769,10 +5467,10 @@ function Pengguna() {
                   <td className="py-3 px-3 text-xs text-slate-600">{x.jabatan || x.nip || '-'}</td>
                   <td className="py-3 px-3">
                     <span className={`badge text-[11px] font-bold capitalize ${
-                      x.role === 'admin' ? 'bg-brand-100 text-brand-800 border-brand-200' :
-                      x.role === 'lurah' ? 'bg-indigo-100 text-indigo-800 border-indigo-200' :
-                      x.role === 'petugas' ? 'bg-violet-100 text-violet-800 border-violet-200' :
-                      'bg-slate-100 text-slate-700 border-slate-200'
+                      x.role === 'admin' ? 'bg-violet-100 text-violet-900 border-violet-200' :
+                      x.role === 'lurah' ? 'bg-indigo-100 text-indigo-900 border-indigo-200' :
+                      x.role === 'petugas' ? 'bg-sky-100 text-sky-900 border-sky-200' :
+                      'bg-emerald-50 text-emerald-800 border-emerald-200'
                     }`}>{x.role}</span>
                   </td>
                   <td className="py-3 px-3">
@@ -5057,12 +5755,54 @@ function Jenis() {
 }
 
 function Log() {
-  const [l] = useGet('/admin/logs');
+  const [l, load] = useGet('/admin/logs');
+  const [q, setQ] = useState('');
+
+  const badgeClass = (aksi = '') => {
+    if (/HAPUS|TOLAK|DITOLAK/.test(aksi)) return 'bg-rose-50 text-rose-700 border-rose-200';
+    if (/TERBIT|SETUJU|VERIFIKASI_WARGA_TERVERIFIKASI|LENGKAP/.test(aksi)) return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+    if (/LOGIN/.test(aksi)) return 'bg-violet-50 text-violet-700 border-violet-200';
+    return 'bg-sky-50 text-sky-700 border-sky-200';
+  };
+
+  const filtered = (l || []).filter((x) => {
+    if (!q.trim()) return true;
+    const term = q.toLowerCase();
+    return (
+      (x.aksi || '').toLowerCase().includes(term) ||
+      (x.nama || '').toLowerCase().includes(term) ||
+      (x.detail || '').toLowerCase().includes(term) ||
+      (x.ip || '').toLowerCase().includes(term)
+    );
+  });
+
   return (
-    <Card title="Audit Log Aktivitas Sistem" subtitle="Catatan seluruh aktivitas pembuatan akun, verifikasi, dan transaksi surat">
+    <Card
+      title="Audit Log & Keamanan Sistem"
+      subtitle="Pemantauan jejak autentikasi, verifikasi kependudukan, dan aktivitas persuratan secara real-time"
+      rightAction={
+        <div className="flex items-center gap-2">
+          <input
+            className="inp text-xs py-1.5 max-w-xs"
+            placeholder="Cari aktivitas, user, atau IP..."
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+          />
+          <button type="button" onClick={load} className="btn btn-o text-xs py-1.5 px-3 font-semibold">
+            🔄 Refresh
+          </button>
+        </div>
+      }
+    >
       <Table
         head={['Waktu', 'Pengguna', 'Aktivitas', 'Detail', 'IP Address']}
-        rows={(l || []).map((x) => [tg(x.created_at), x.nama || 'Sistem / Tamu', <b key="a" className="text-navy text-xs">{x.aksi}</b>, x.detail || '-', x.ip])}
+        rows={filtered.map((x) => [
+          tg(x.created_at),
+          <span key="n" className="font-semibold text-slate-800">{x.nama || 'Sistem / Tamu'}</span>,
+          <span key="a" className={`badge text-[11px] font-bold ${badgeClass(x.aksi)}`}>{x.aksi}</span>,
+          x.detail || '-',
+          <code key="ip" className="text-[11px] text-slate-500 font-mono">{x.ip || '-'}</code>,
+        ])}
       />
     </Card>
   );
@@ -5078,7 +5818,7 @@ function ProfilDesaWrapper() {
    ==================================================================== */
 function BeritaKelurahan() {
   const { user } = useAuth();
-  const canManage = ['petugas', 'lurah', 'admin'].includes(user?.role);
+  const canManage = ['petugas', 'lurah'].includes(user?.role);
   const [list, load] = useGet('/berita');
   const [f, setF] = useState({
     judul: '',
@@ -5210,7 +5950,7 @@ function BeritaKelurahan() {
           subtitle="Berita yang dikelola di sini langsung tampil secara dinamis pada halaman Beranda portal publik warga"
         >
           <div className="rounded-xl bg-blue-50 border border-blue-200 p-3.5 text-xs text-blue-900 mb-4">
-            <strong>ℹ️ Hak Akses Konten:</strong> Hanya Pejabat Berwenang (Admin, Petugas, Lurah) yang dapat menerbitkan atau memperbarui berita kelurahan. Warga hanya memiliki hak akses baca.
+            <strong>ℹ️ Hak Akses Konten:</strong> Hanya Petugas Pelayanan dan Lurah yang dapat menerbitkan atau memperbarui berita kelurahan. Warga memiliki hak akses baca.
           </div>
 
           <form onSubmit={simpan} className="space-y-4">
@@ -6456,7 +7196,7 @@ export default function App() {
             <Route
               path="verifikasi-warga"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <VerifikasiWarga />
                 </Only>
               }
@@ -6473,7 +7213,7 @@ export default function App() {
             <Route
               path="profil-desa"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['admin', 'lurah']}>
                   <ProfilDesaWrapper />
                 </Only>
               }
@@ -6485,7 +7225,7 @@ export default function App() {
             <Route
               path="umkm"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <UmkmKelurahan />
                 </Only>
               }
@@ -6493,7 +7233,7 @@ export default function App() {
             <Route
               path="galeri"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <GaleriKelurahan />
                 </Only>
               }
@@ -6501,13 +7241,27 @@ export default function App() {
             <Route
               path="anggaran"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['lurah']}>
                   <AnggaranKelurahan />
                 </Only>
               }
             />
-            <Route path="pengajuan" element={<List />} />
-            <Route path="pengajuan/:id" element={<Detail />} />
+            <Route
+              path="pengajuan"
+              element={
+                <Only r={['warga', 'petugas', 'lurah']}>
+                  <List />
+                </Only>
+              }
+            />
+            <Route
+              path="pengajuan/:id"
+              element={
+                <Only r={['warga', 'petugas', 'lurah']}>
+                  <Detail />
+                </Only>
+              }
+            />
             <Route
               path="surat"
               element={
@@ -6519,7 +7273,7 @@ export default function App() {
             <Route
               path="surat-masuk"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <SuratMasuk />
                 </Only>
               }
@@ -6527,7 +7281,7 @@ export default function App() {
             <Route
               path="surat-keluar"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <SuratKeluar />
                 </Only>
               }
@@ -6535,7 +7289,7 @@ export default function App() {
             <Route
               path="arsip"
               element={
-                <Only r={['petugas', 'lurah', 'admin']}>
+                <Only r={['petugas', 'lurah']}>
                   <Arsip />
                 </Only>
               }

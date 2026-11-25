@@ -133,6 +133,12 @@ const upload = multer({
 });
 
 const getP = async (id, user) => {
+  if (user.role === 'warga') {
+    const [uc] = await q('SELECT status_verifikasi FROM users WHERE id=?', [user.id]);
+    if (uc?.status_verifikasi !== 'terverifikasi') {
+      throw fail(403, 'Akun Anda belum terverifikasi oleh petugas kelurahan.');
+    }
+  }
   const [p] = await q(
     'SELECT p.*, j.nama AS jenis, j.kode AS jkode, j.form_fields, j.template, u.nama AS pemohon, w.nik, w.no_kk, w.tempat_lahir, w.tanggal_lahir, w.jenis_kelamin, w.alamat, w.pekerjaan, w.telepon FROM pengajuan p JOIN jenis_surat j ON j.id=p.jenis_surat_id JOIN users u ON u.id=p.user_id LEFT JOIN warga w ON w.user_id=p.user_id WHERE p.id=?',
     [id]
@@ -580,7 +586,7 @@ app.delete('/api/users/me', auth, ah(handleHapusAkunSendiri));
    ==================================================================== */
 
 /* ====================================================================
-   BERITA & PENGUMUMAN KELURAHAN (PUBLIK BACA, ADMIN/PETUGAS/LURAH KELOLA)
+   BERITA & PENGUMUMAN KELURAHAN (PUBLIK BACA, PETUGAS & LURAH KELOLA)
    ==================================================================== */
 
 app.get('/api/berita', ah(async (req, res) => {
@@ -588,7 +594,7 @@ app.get('/api/berita', ah(async (req, res) => {
   res.json(rows);
 }));
 
-app.post('/api/berita', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.post('/api/berita', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { judul, isi, kategori, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul berita wajib diisi');
   if (!isi || !isi.trim()) throw fail(400, 'Isi berita wajib diisi');
@@ -600,7 +606,7 @@ app.post('/api/berita', auth, role('petugas', 'lurah', 'admin'), ah(async (req, 
   res.status(201).json({ message: 'Berita berhasil ditambahkan' });
 }));
 
-app.put('/api/berita/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.put('/api/berita/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { judul, isi, kategori, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul berita wajib diisi');
   await q('UPDATE berita SET judul=?, isi=?, kategori=?, tanggal=?, updated_at=NOW() WHERE id=?',
@@ -609,14 +615,14 @@ app.put('/api/berita/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (re
   res.json({ message: 'Berita berhasil diperbarui' });
 }));
 
-app.delete('/api/berita/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.delete('/api/berita/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   await q('DELETE FROM berita WHERE id=?', [req.params.id]);
   await log(req, 'HAPUS_BERITA', `id=${req.params.id}`);
   res.json({ message: 'Berita berhasil dihapus' });
 }));
 
 /* ====================================================================
-   DIREKTORI UMKM LOKAL (PUBLIK BACA, ADMIN/PETUGAS/LURAH KELOLA)
+   DIREKTORI UMKM LOKAL (PUBLIK BACA, PETUGAS & LURAH KELOLA)
    ==================================================================== */
 
 app.get('/api/umkm', ah(async (req, res) => {
@@ -624,7 +630,7 @@ app.get('/api/umkm', ah(async (req, res) => {
   res.json(rows);
 }));
 
-app.post('/api/umkm', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.post('/api/umkm', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { nama, jenis, alamat, telepon, deskripsi } = req.body;
   if (!nama || !nama.trim()) throw fail(400, 'Nama UMKM wajib diisi');
   await q('INSERT INTO umkm (nama, jenis, alamat, telepon, deskripsi) VALUES (?, ?, ?, ?, ?)',
@@ -633,7 +639,7 @@ app.post('/api/umkm', auth, role('petugas', 'lurah', 'admin'), ah(async (req, re
   res.status(201).json({ message: 'UMKM berhasil ditambahkan' });
 }));
 
-app.put('/api/umkm/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.put('/api/umkm/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { nama, jenis, alamat, telepon, deskripsi } = req.body;
   if (!nama || !nama.trim()) throw fail(400, 'Nama UMKM wajib diisi');
   await q('UPDATE umkm SET nama=?, jenis=?, alamat=?, telepon=?, deskripsi=?, updated_at=NOW() WHERE id=?',
@@ -642,14 +648,14 @@ app.put('/api/umkm/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req,
   res.json({ message: 'UMKM berhasil diperbarui' });
 }));
 
-app.delete('/api/umkm/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.delete('/api/umkm/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   await q('DELETE FROM umkm WHERE id=?', [req.params.id]);
   await log(req, 'HAPUS_UMKM', `id=${req.params.id}`);
   res.json({ message: 'UMKM berhasil dihapus' });
 }));
 
 /* ====================================================================
-   GALERI KEGIATAN KELURAHAN (PUBLIK BACA, ADMIN/PETUGAS/LURAH KELOLA)
+   GALERI KEGIATAN KELURAHAN (PUBLIK BACA, PETUGAS & LURAH KELOLA)
    ==================================================================== */
 
 app.get('/api/galeri', ah(async (req, res) => {
@@ -657,7 +663,7 @@ app.get('/api/galeri', ah(async (req, res) => {
   res.json(rows);
 }));
 
-app.post('/api/galeri', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.post('/api/galeri', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { judul, deskripsi, url_foto, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul kegiatan wajib diisi');
   if (!url_foto || !url_foto.trim()) throw fail(400, 'URL/data foto wajib diisi');
@@ -668,7 +674,7 @@ app.post('/api/galeri', auth, role('petugas', 'lurah', 'admin'), ah(async (req, 
   res.status(201).json({ message: 'Foto kegiatan berhasil ditambahkan' });
 }));
 
-app.put('/api/galeri/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.put('/api/galeri/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   const { judul, deskripsi, url_foto, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul kegiatan wajib diisi');
   await q('UPDATE galeri_kegiatan SET judul=?, deskripsi=?, url_foto=?, tanggal=?, updated_at=NOW() WHERE id=?',
@@ -677,14 +683,14 @@ app.put('/api/galeri/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (re
   res.json({ message: 'Foto kegiatan berhasil diperbarui' });
 }));
 
-app.delete('/api/galeri/:id', auth, role('petugas', 'lurah', 'admin'), ah(async (req, res) => {
+app.delete('/api/galeri/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   await q('DELETE FROM galeri_kegiatan WHERE id=?', [req.params.id]);
   await log(req, 'HAPUS_GALERI', `id=${req.params.id}`);
   res.json({ message: 'Foto kegiatan berhasil dihapus' });
 }));
 
 /* ====================================================================
-   TRANSPARANSI ANGGARAN KELURAHAN (PUBLIK BACA, ADMIN/LURAH KELOLA)
+   TRANSPARANSI ANGGARAN KELURAHAN (PUBLIK BACA, EKSKLUSIF LURAH KELOLA)
    ==================================================================== */
 
 app.get('/api/anggaran', ah(async (req, res) => {
@@ -692,7 +698,7 @@ app.get('/api/anggaran', ah(async (req, res) => {
   res.json(rows);
 }));
 
-app.post('/api/anggaran', auth, role('lurah', 'admin'), ah(async (req, res) => {
+app.post('/api/anggaran', auth, role('lurah'), ah(async (req, res) => {
   const { tahun, program, pagu, realisasi, sumber, keterangan } = req.body;
   if (!tahun) throw fail(400, 'Tahun anggaran wajib diisi');
   if (!program || !program.trim()) throw fail(400, 'Program/kegiatan wajib diisi');
@@ -702,7 +708,7 @@ app.post('/api/anggaran', auth, role('lurah', 'admin'), ah(async (req, res) => {
   res.status(201).json({ message: 'Data anggaran berhasil ditambahkan' });
 }));
 
-app.put('/api/anggaran/:id', auth, role('lurah', 'admin'), ah(async (req, res) => {
+app.put('/api/anggaran/:id', auth, role('lurah'), ah(async (req, res) => {
   const { tahun, program, pagu, realisasi, sumber, keterangan } = req.body;
   if (!program || !program.trim()) throw fail(400, 'Program/kegiatan wajib diisi');
   await q('UPDATE anggaran SET tahun=?, program=?, pagu=?, realisasi=?, sumber=?, keterangan=?, updated_at=NOW() WHERE id=?',
@@ -711,7 +717,7 @@ app.put('/api/anggaran/:id', auth, role('lurah', 'admin'), ah(async (req, res) =
   res.json({ message: 'Data anggaran berhasil diperbarui' });
 }));
 
-app.delete('/api/anggaran/:id', auth, role('lurah', 'admin'), ah(async (req, res) => {
+app.delete('/api/anggaran/:id', auth, role('lurah'), ah(async (req, res) => {
   await q('DELETE FROM anggaran WHERE id=?', [req.params.id]);
   await log(req, 'HAPUS_ANGGARAN', `id=${req.params.id}`);
   res.json({ message: 'Data anggaran berhasil dihapus' });
@@ -796,7 +802,7 @@ app.get(
 app.put(
   '/api/profil-desa',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('admin', 'lurah'),
   ah(async (req, res) => {
     const b = req.body;
     const rows = await q('SELECT id FROM profil_desa ORDER BY id ASC LIMIT 1');
@@ -853,7 +859,7 @@ app.put(
 app.post(
   '/api/profil-desa/logo',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('admin', 'lurah'),
   upload.single('logo'),
   ah(async (req, res) => {
     if (!req.file) throw fail(400, 'Berkas logo kelurahan wajib diunggah.');
@@ -891,6 +897,7 @@ app.get(
 app.post(
   '/api/users/signature',
   auth,
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const { tanda_tangan } = req.body;
     if (!tanda_tangan || typeof tanda_tangan !== 'string' || !tanda_tangan.startsWith('data:image')) {
@@ -914,13 +921,13 @@ app.get(
 );
 
 /* ====================================================================
-   2. FITUR VERIFIKASI AKUN WARGA (PETUGAS & ADMIN)
+   2. FITUR VERIFIKASI AKUN WARGA (PETUGAS LOKET & SUPERVISI LURAH)
    ==================================================================== */
 
 app.get(
   '/api/verifikasi-warga',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const st = req.query.status || 'menunggu_verifikasi';
     const where = st === 'all' ? "WHERE u.role = 'warga'" : "WHERE u.role = 'warga' AND u.status_verifikasi = ?";
@@ -949,7 +956,7 @@ app.get(
 app.get(
   '/api/verifikasi-warga/:id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const [w] = await q(
       `SELECT u.id, u.nama, u.email, u.status_verifikasi, u.catatan_verifikasi, u.diverifikasi_at, u.created_at,
@@ -973,7 +980,7 @@ app.get(
 app.post(
   '/api/verifikasi-warga/:id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const { hasil, catatan } = req.body;
     if (!['terverifikasi', 'ditolak'].includes(hasil)) {
@@ -1215,9 +1222,12 @@ app.post(
 app.get(
   '/api/pengajuan',
   auth,
+  role('warga', 'petugas', 'lurah'),
   ah(async (req, res) => {
     const c = [], p = [];
     if (req.user.role === 'warga') {
+      const [userCheck] = await q('SELECT status_verifikasi FROM users WHERE id=?', [req.user.id]);
+      if (userCheck?.status_verifikasi !== 'terverifikasi') return res.json([]);
       c.push('p.user_id=?');
       p.push(req.user.id);
     }
@@ -1311,7 +1321,7 @@ app.post(
 app.post(
   '/api/pengajuan/:id/mulai',
   auth,
-  role('petugas', 'admin'),
+  role('petugas'),
   ah(async (req, res) => {
     const p = await getP(req.params.id, req.user);
     await move(p.id, ['submitted'], 'under_review');
@@ -1324,7 +1334,7 @@ app.post(
 app.post(
   '/api/pengajuan/:id/verifikasi',
   auth,
-  role('petugas', 'admin'),
+  role('petugas'),
   ah(async (req, res) => {
     const { hasil, catatan } = req.body;
     const to = { lengkap: 'pending_approval', revisi: 'revision_required', ditolak: 'rejected' }[hasil];
@@ -1521,7 +1531,7 @@ async function prosesTerbitkanSurat(pengajuanId, actorUser, signatureOverride = 
 app.post(
   '/api/pengajuan/:id/persetujuan',
   auth,
-  role('lurah', 'admin'),
+  role('lurah'),
   ah(async (req, res) => {
     const { hasil, catatan, tanda_tangan, redaksi, nomor } = req.body;
     if (!['setuju', 'tolak'].includes(hasil)) throw fail(400, 'Hasil tidak valid');
@@ -1578,7 +1588,7 @@ app.post(
 app.post(
   '/api/pengajuan/:id/terbitkan',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const p = await getP(req.params.id, req.user);
     if (!['approved', 'pending_approval', 'issued'].includes(p.status)) {
@@ -1667,6 +1677,9 @@ app.get(
   auth,
   role('warga'),
   ah(async (req, res) => {
+    const [userCheck] = await q('SELECT status_verifikasi FROM users WHERE id=?', [req.user.id]);
+    if (userCheck?.status_verifikasi !== 'terverifikasi') return res.json([]);
+
     const rows = await q(
       `SELECT s.id, s.nomor, s.kode_verifikasi, s.terbit_at, s.pengajuan_id,
               j.nama AS jenis, j.kode, p.kode AS kode_pengajuan,
@@ -1681,79 +1694,6 @@ app.get(
       [req.user.id]
     );
     res.json(rows);
-  })
-);
-
-// Buat Surat Keluar / Surat Dinas Mandiri oleh Lurah, Petugas, atau Admin
-app.post(
-  '/api/surat-keluar',
-  auth,
-  role('petugas', 'lurah', 'admin'),
-  ah(async (req, res) => {
-    const { tujuan, perihal, isi_surat } = req.body;
-    if (!tujuan || !tujuan.trim()) throw fail(400, 'Tujuan / penerima surat dinas wajib diisi');
-    if (!perihal || !perihal.trim()) throw fail(400, 'Perihal surat wajib diisi');
-    if (!isi_surat || !isi_surat.trim()) throw fail(400, 'Isi redaksi surat dinas wajib diisi');
-
-    const now = new Date();
-    const tahun = now.getFullYear();
-    const countKeluar = await q('SELECT COUNT(*) AS c FROM surat_keluar WHERE EXTRACT(YEAR FROM created_at) = ?', [tahun]);
-    const n = parseInt(countKeluar[0]?.c || 0, 10) + 1;
-    const nomorSuratKeluar = `005/${String(n).padStart(3, '0')}/KEL-SKM/${ROM[now.getMonth()]}/${tahun}`;
-
-    // Ambil data profil desa & kop surat
-    const [desaList] = await q('SELECT * FROM profil_desa ORDER BY id ASC LIMIT 1');
-    const kop = desaList || {
-      nama_desa: 'Kelurahan Suka Maju',
-      kecamatan: 'Kecamatan Medan Johor',
-      kabupaten_kota: 'Pemerintah Kota Medan',
-      provinsi: 'Sumatera Utara',
-      alamat: 'Jl. STM No. 40, Kelurahan Suka Maju',
-      kode_pos: '20146',
-      telepon: '0823-4123-5734',
-    };
-
-    // Ambil data lurah penandatangan
-    const [lurah] = await q("SELECT id, nama, jabatan, nip, tanda_tangan FROM users WHERE role = 'lurah' AND aktif = 1 ORDER BY id ASC LIMIT 1");
-
-    const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
-    fs.mkdirSync(storageDir, { recursive: true });
-    const kodeFile = crypto.randomBytes(6).toString('hex');
-    const file = path.join(storageDir, `Surat-Dinas-${kodeFile}.pdf`);
-
-    const tanggalStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    // Buat PDF surat dinas resmi dengan KOP Kelurahan Dinamis & TTE Lurah Asli
-    await buatPdfSuratDinas(
-      {
-        nomor: nomorSuratKeluar,
-        tujuan: tujuan.trim(),
-        perihal: perihal.trim(),
-        isi: isi_surat.trim(),
-        tanggal: tanggalStr,
-        kop,
-        lurah: lurah?.nama || kop.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
-        nip: lurah?.nip || kop.nip_lurah || '198506122010011005',
-        jabatan: lurah?.jabatan || kop.jabatan_lurah || 'Lurah Suka Maju',
-        tanda_tangan: lurah?.tanda_tangan || req.user.tanda_tangan || null,
-      },
-      file
-    );
-
-    const [r] = await db.query(
-      `INSERT INTO surat_keluar (nomor_surat, tujuan, perihal, isi_surat, tanggal_surat, file_path, petugas_id, ditandatangani_oleh, status)
-       VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'dikirim') RETURNING id`,
-      [nomorSuratKeluar, tujuan.trim(), perihal.trim(), isi_surat.trim(), file, req.user.id, lurah?.id || req.user.id]
-    );
-
-    await notifRole('lurah', `📤 Surat dinas keluar baru diterbitkan: "${perihal}" kepada ${tujuan} (Nomor: ${nomorSuratKeluar})`);
-    await log(req, 'BUAT_SURAT_KELUAR', `Nomor: ${nomorSuratKeluar}, Tujuan: ${tujuan}`);
-
-    res.status(201).json({
-      id: r[0]?.id || r.insertId,
-      nomor_surat: nomorSuratKeluar,
-      message: 'Surat dinas resmi berhasil dibuat dan diarsipkan',
-    });
   })
 );
 
@@ -1842,7 +1782,7 @@ app.delete(
 app.get(
   '/api/arsip',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const k = `%${req.query.q || ''}%`;
     res.json(
@@ -1862,7 +1802,8 @@ app.get(
     const st = {};
     const statusCounts = await q(`SELECT status,COUNT(*)::int AS n FROM pengajuan p ${w} GROUP BY status`, p);
     statusCounts.forEach((r) => (st[r.status] = parseInt(r.n, 10)));
-    res.json({
+
+    const payload = {
       status: st,
       jenis: await q(
         `SELECT j.nama,COUNT(*)::int AS n FROM pengajuan p JOIN jenis_surat j ON j.id=p.jenis_surat_id ${w} GROUP BY j.nama ORDER BY n DESC`,
@@ -1872,7 +1813,48 @@ app.get(
         `SELECT TO_CHAR(p.created_at,'YYYY-MM') AS nama,COUNT(*)::int AS n FROM pengajuan p ${w} GROUP BY TO_CHAR(p.created_at,'YYYY-MM') ORDER BY nama DESC LIMIT 6`,
         p
       ),
-    });
+    };
+
+    if (['petugas', 'lurah'].includes(req.user.role)) {
+      const allUsers = await q('SELECT id, nama, role, status_verifikasi, aktif, created_at FROM users');
+      const wargaUsers = (allUsers || []).filter((u) => u.role === 'warga');
+      payload.warga_pending = wargaUsers.filter((u) => (u.status_verifikasi || 'menunggu_verifikasi') === 'menunggu_verifikasi').length;
+      payload.warga_terverifikasi = wargaUsers.filter((u) => u.status_verifikasi === 'terverifikasi').length;
+
+      const smAll = await q('SELECT id, nomor_surat, pengirim, perihal, tanggal_surat, status, created_at FROM surat_masuk');
+      payload.sm_menunggu = (smAll || []).filter((x) => x.status === 'menunggu_disposisi').length;
+      payload.sm_didisposisi = (smAll || []).filter((x) => x.status === 'didisposisi').length;
+      payload.sm_dibalas = (smAll || []).filter((x) => x.status === 'dibalas').length;
+
+      const skAll = await q('SELECT id FROM surat_keluar');
+      payload.sk_total = (skAll || []).length;
+
+      const angAll = await q('SELECT pagu, realisasi FROM anggaran');
+      const totalPagu = (angAll || []).reduce((a, c) => a + (Number(c.pagu) || 0), 0);
+      const totalReal = (angAll || []).reduce((a, c) => a + (Number(c.realisasi) || 0), 0);
+      payload.anggaran = {
+        total_pagu: totalPagu,
+        total_realisasi: totalReal,
+        persen: totalPagu > 0 ? Math.round((totalReal / totalPagu) * 100) : 0,
+      };
+
+      const [meSig] = await q('SELECT tanda_tangan FROM users WHERE id=?', [req.user.id]);
+      payload.has_signature = Boolean(meSig?.tanda_tangan);
+
+      const allPengajuan = await q(
+        `SELECT p.id,p.kode,p.status,p.created_at,j.nama AS jenis,u.nama AS pemohon FROM pengajuan p JOIN jenis_surat j ON j.id=p.jenis_surat_id JOIN users u ON u.id=p.user_id ORDER BY p.id DESC`
+      );
+      if (req.user.role === 'lurah') {
+        payload.antrean_pengajuan = (allPengajuan || []).filter((x) => x.status === 'pending_approval').slice(0, 6);
+        payload.antrean_surat_masuk = (smAll || []).filter((x) => x.status === 'menunggu_disposisi').sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 6);
+      } else {
+        payload.antrean_pengajuan = (allPengajuan || []).filter((x) => ['submitted', 'under_review', 'approved'].includes(x.status)).slice(0, 6);
+        payload.antrean_surat_masuk = (smAll || []).filter((x) => x.status === 'didisposisi').sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 6);
+        payload.antrean_warga = wargaUsers.filter((u) => (u.status_verifikasi || 'menunggu_verifikasi') === 'menunggu_verifikasi').sort((a, b) => (b.id || 0) - (a.id || 0)).slice(0, 5);
+      }
+    }
+
+    res.json(payload);
   })
 );
 
@@ -1975,15 +1957,89 @@ app.get(
   )
 );
 
+app.get(
+  '/api/admin/system-status',
+  ...adm,
+  ah(async (req, res) => {
+    const users = await q('SELECT id, nama, role, status_verifikasi, aktif, created_at FROM users');
+    const jenis = await q('SELECT id, kode, nama, aktif FROM jenis_surat');
+    const syarat = await q('SELECT id FROM persyaratan');
+    const logs = await q('SELECT l.*, u.nama FROM activity_logs l LEFT JOIN users u ON u.id=l.user_id ORDER BY l.id DESC LIMIT 200');
+    const [desa] = await q('SELECT nama_desa, logo_url, website, email FROM profil_desa ORDER BY id ASC LIMIT 1');
+
+    const byRole = { admin: 0, lurah: 0, petugas: 0, warga: 0 };
+    let aktifCount = 0;
+    let nonaktifCount = 0;
+    let wargaTerverifikasi = 0;
+    let wargaPending = 0;
+    let wargaDitolak = 0;
+
+    for (const u of users || []) {
+      if (byRole[u.role] !== undefined) byRole[u.role] += 1;
+      if (u.aktif) aktifCount += 1;
+      else nonaktifCount += 1;
+      if (u.role === 'warga') {
+        if (u.status_verifikasi === 'terverifikasi') wargaTerverifikasi += 1;
+        else if (u.status_verifikasi === 'ditolak') wargaDitolak += 1;
+        else wargaPending += 1;
+      }
+    }
+
+    const jenisAktif = (jenis || []).filter((j) => Number(j.aktif) === 1).length;
+    const todayPrefix = new Date().toISOString().slice(0, 10);
+    const logsToday = (logs || []).filter((l) => String(l.created_at || '').startsWith(todayPrefix)).length;
+
+    res.json({
+      server: {
+        status: 'online',
+        node_version: process.version,
+        uptime_seconds: Math.floor(process.uptime()),
+        db_mode: db.isLocalMode() ? 'Local Storage Fallback (Offline Mode)' : 'Supabase PostgreSQL Cloud',
+        is_local_mode: db.isLocalMode(),
+        upload_policy: 'Tanpa Batasan Ukuran (Unlimited Media)',
+        auth_method: 'JWT Bearer + Query Token',
+      },
+      users: {
+        total: (users || []).length,
+        aktif: aktifCount,
+        nonaktif: nonaktifCount,
+        by_role: byRole,
+        warga_verifikasi: {
+          terverifikasi: wargaTerverifikasi,
+          menunggu: wargaPending,
+          ditolak: wargaDitolak,
+        },
+      },
+      master: {
+        jenis_total: (jenis || []).length,
+        jenis_aktif: jenisAktif,
+        jenis_nonaktif: (jenis || []).length - jenisAktif,
+        persyaratan_total: (syarat || []).length,
+      },
+      portal: {
+        nama_desa: desa?.nama_desa || 'Kelurahan Suka Maju',
+        has_logo: Boolean(desa?.logo_url),
+        website: desa?.website || '-',
+        email: desa?.email || '-',
+      },
+      security: {
+        total_logs: (logs || []).length,
+        logs_today: logsToday,
+        recent_logs: (logs || []).slice(0, 6),
+      },
+    });
+  })
+);
+
 /* ====================================================================
-   7. TATA KELOLA PERSURATAN KEDINASAN (SURAT MASUK, DISPOSISI, SURAT BALASAN)
+   7. TATA KELOLA PERSURATAN KEDINASAN (PETUGAS TATA USAHA & LURAH)
    ==================================================================== */
 
 // Daftar Surat Masuk
 app.get(
   '/api/surat-masuk',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const qSearch = req.query.q ? `%${req.query.q}%` : null;
     const status = req.query.status || null;
@@ -2016,86 +2072,11 @@ app.get(
   })
 );
 
-// Buat Surat Keluar / Surat Dinas Mandiri oleh Lurah, Petugas, atau Admin
-app.post(
-  '/api/surat-keluar',
-  auth,
-  role('petugas', 'lurah', 'admin'),
-  ah(async (req, res) => {
-    const { tujuan, perihal, isi_surat } = req.body;
-    if (!tujuan || !tujuan.trim()) throw fail(400, 'Tujuan / penerima surat dinas wajib diisi');
-    if (!perihal || !perihal.trim()) throw fail(400, 'Perihal surat wajib diisi');
-    if (!isi_surat || !isi_surat.trim()) throw fail(400, 'Isi redaksi surat dinas wajib diisi');
-
-    const now = new Date();
-    const tahun = now.getFullYear();
-    const countKeluar = await q('SELECT COUNT(*) AS c FROM surat_keluar WHERE EXTRACT(YEAR FROM created_at) = ?', [tahun]);
-    const n = parseInt(countKeluar[0]?.c || 0, 10) + 1;
-    const nomorSuratKeluar = `005/${String(n).padStart(3, '0')}/KEL-SKM/${ROM[now.getMonth()]}/${tahun}`;
-
-    // Ambil data profil desa & kop surat
-    const [desaList] = await q('SELECT * FROM profil_desa ORDER BY id ASC LIMIT 1');
-    const kop = desaList || {
-      nama_desa: 'Kelurahan Suka Maju',
-      kecamatan: 'Kecamatan Medan Johor',
-      kabupaten_kota: 'Pemerintah Kota Medan',
-      provinsi: 'Sumatera Utara',
-      alamat: 'Jl. STM No. 40, Kelurahan Suka Maju',
-      kode_pos: '20146',
-      telepon: '0823-4123-5734',
-    };
-
-    // Ambil data lurah penandatangan
-    const [lurah] = await q("SELECT id, nama, jabatan, nip, tanda_tangan FROM users WHERE role = 'lurah' AND aktif = 1 ORDER BY id ASC LIMIT 1");
-
-    const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
-    fs.mkdirSync(storageDir, { recursive: true });
-    const kodeFile = crypto.randomBytes(6).toString('hex');
-    const file = path.join(storageDir, `Surat-Dinas-${kodeFile}.pdf`);
-
-    const tanggalStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    // Buat PDF surat dinas resmi dengan KOP Kelurahan Dinamis & TTE Lurah Asli
-    await buatPdfSuratDinas(
-      {
-        nomor: nomorSuratKeluar,
-        tujuan: tujuan.trim(),
-        perihal: perihal.trim(),
-        isi: isi_surat.trim(),
-        tanggal: tanggalStr,
-        kop,
-        lurah: lurah?.nama || kop.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
-        nip: lurah?.nip || kop.nip_lurah || '198506122010011005',
-        jabatan: lurah?.jabatan || kop.jabatan_lurah || 'Lurah Suka Maju',
-        tanda_tangan: lurah?.tanda_tangan || req.user.tanda_tangan || null,
-      },
-      file
-    );
-
-    const [r] = await db.query(
-      `INSERT INTO surat_keluar (nomor_surat, tujuan, perihal, isi_surat, tanggal_surat, file_path, petugas_id, ditandatangani_oleh, status)
-       VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'dikirim') RETURNING id`,
-      [nomorSuratKeluar, tujuan.trim(), perihal.trim(), isi_surat.trim(), file, req.user.id, lurah?.id || req.user.id]
-    );
-
-    await notifRole('lurah', `📤 Surat dinas keluar baru diterbitkan: "${perihal}" kepada ${tujuan} (Nomor: ${nomorSuratKeluar})`);
-    await log(req, 'BUAT_SURAT_KELUAR', `Nomor: ${nomorSuratKeluar}, Tujuan: ${tujuan}`);
-
-    res.status(201).json({
-      id: r[0]?.id || r.insertId,
-      nomor_surat: nomorSuratKeluar,
-      message: 'Surat dinas resmi berhasil dibuat dan diarsipkan',
-    });
-  })
-);
-
-
-
-// Catat Surat Masuk Baru
+// Catat Surat Masuk Baru (Petugas Tata Usaha / Lurah)
 app.post(
   '/api/surat-masuk',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   upload.single('lampiran'),
   ah(async (req, res) => {
     const { nomor_surat, pengirim, tanggal_surat, perihal, ringkasan_isi } = req.body;
@@ -2123,7 +2104,7 @@ app.post(
 app.get(
   '/api/surat-masuk/:id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const sm = await q('SELECT sm.*, u.nama AS pencatat FROM surat_masuk sm LEFT JOIN users u ON u.id = sm.dicatat_oleh WHERE sm.id = ?', [req.params.id]);
     if (!sm.length) throw fail(404, 'Surat masuk tidak ditemukan');
@@ -2155,7 +2136,7 @@ app.get(
   })
 );
 
-// Berikan Lembar Disposisi Lurah
+// Berikan Lembar Disposisi Lurah (Eksklusif Lurah)
 app.post(
   '/api/surat-masuk/:id/disposisi',
   auth,
@@ -2188,7 +2169,7 @@ app.post(
 app.post(
   '/api/surat-masuk/:id/balas',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const { perihal, isi_surat } = req.body;
     if (!perihal || !isi_surat || !isi_surat.trim()) {
@@ -2201,12 +2182,13 @@ app.post(
 
     const now = new Date();
     const tahun = now.getFullYear();
-    const countKeluar = await q('SELECT COUNT(*) AS c FROM surat_keluar WHERE EXTRACT(YEAR FROM created_at) = ?', [tahun]);
-    const n = parseInt(countKeluar[0]?.c || 0, 10) + 1;
+    const skRows = await q('SELECT id, created_at FROM surat_keluar');
+    const countThisYear = (skRows || []).filter((x) => !x.created_at || String(x.created_at).startsWith(String(tahun))).length;
+    const n = countThisYear + 1;
     const nomorSuratKeluar = `005/${String(n).padStart(3, '0')}/KEL-SKM/${ROM[now.getMonth()]}/${tahun}`;
 
-    // Ambil data lurah
-    const [lurah] = await q("SELECT id, nama, jabatan, nip FROM users WHERE role = 'lurah' AND aktif = 1 LIMIT 1");
+    // Ambil data lurah penandatangan resmi
+    const [lurah] = await q("SELECT id, nama, jabatan, nip, tanda_tangan FROM users WHERE role = 'lurah' AND aktif = 1 ORDER BY id ASC LIMIT 1");
 
     const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
     fs.mkdirSync(storageDir, { recursive: true });
@@ -2227,7 +2209,8 @@ app.post(
         kop: profil || {},
         lurah: lurah?.nama || profil?.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
         nip: lurah?.nip || profil?.nip_lurah || '198506122010011005',
-        jabatan: profil?.jabatan_lurah || 'Lurah Suka Maju',
+        jabatan: lurah?.jabatan || profil?.jabatan_lurah || 'Lurah Suka Maju',
+        tanda_tangan: lurah?.tanda_tangan || null,
       },
       file
     );
@@ -2240,7 +2223,7 @@ app.post(
 
     await q("UPDATE surat_masuk SET status = 'dibalas' WHERE id = ?", [sm.id]);
 
-    await notifRole('lurah', `📨 Surat balasan resmi telah dikerjakan untuk ${sm.pengirim} dengan Nomor: ${nomorSuratKeluar}`);
+    await notifRole('lurah', `📨 Surat balasan resmi telah diterbitkan untuk ${sm.pengirim} dengan Nomor: ${nomorSuratKeluar}`);
     await log(req, 'BUAT_SURAT_BALASAN', `Nomor Balasan: ${nomorSuratKeluar}, Atas Surat Masuk: ${sm.nomor_surat}`);
 
     res.status(201).json({
@@ -2255,7 +2238,7 @@ app.post(
 app.get(
   '/api/surat-keluar',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const qSearch = req.query.q ? `%${req.query.q}%` : null;
     let whereSql = '';
@@ -2267,7 +2250,7 @@ app.get(
 
     const rows = await q(
       `SELECT sk.*, sm.nomor_surat AS nomor_surat_masuk, sm.pengirim AS pengirim_asal,
-              p.nama AS pembuat, l.nama AS penandatangan
+              p.nama AS pembuat, p.role AS pembuat_role, l.nama AS penandatangan
        FROM surat_keluar sk
        LEFT JOIN surat_masuk sm ON sm.id = sk.surat_masuk_id
        LEFT JOIN users p ON p.id = sk.petugas_id
@@ -2280,11 +2263,11 @@ app.get(
   })
 );
 
-// Buat Surat Keluar / Surat Dinas Mandiri oleh Lurah, Petugas, atau Admin
+// Buat Surat Keluar / Surat Dinas Mandiri (Petugas Tata Usaha / Lurah)
 app.post(
   '/api/surat-keluar',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const { tujuan, perihal, isi_surat } = req.body;
     if (!tujuan || !tujuan.trim()) throw fail(400, 'Tujuan / penerima surat dinas wajib diisi');
@@ -2293,8 +2276,9 @@ app.post(
 
     const now = new Date();
     const tahun = now.getFullYear();
-    const countKeluar = await q('SELECT COUNT(*) AS c FROM surat_keluar WHERE EXTRACT(YEAR FROM created_at) = ?', [tahun]);
-    const n = parseInt(countKeluar[0]?.c || 0, 10) + 1;
+    const skRows = await q('SELECT id, created_at FROM surat_keluar');
+    const countThisYear = (skRows || []).filter((x) => !x.created_at || String(x.created_at).startsWith(String(tahun))).length;
+    const n = countThisYear + 1;
     const nomorSuratKeluar = `005/${String(n).padStart(3, '0')}/KEL-SKM/${ROM[now.getMonth()]}/${tahun}`;
 
     // Ambil data profil desa & kop surat
@@ -2309,7 +2293,7 @@ app.post(
       telepon: '0823-4123-5734',
     };
 
-    // Ambil data lurah penandatangan
+    // Ambil data lurah penandatangan resmi
     const [lurah] = await q("SELECT id, nama, jabatan, nip, tanda_tangan FROM users WHERE role = 'lurah' AND aktif = 1 ORDER BY id ASC LIMIT 1");
 
     const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
@@ -2331,7 +2315,7 @@ app.post(
         lurah: lurah?.nama || kop.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
         nip: lurah?.nip || kop.nip_lurah || '198506122010011005',
         jabatan: lurah?.jabatan || kop.jabatan_lurah || 'Lurah Suka Maju',
-        tanda_tangan: lurah?.tanda_tangan || req.user.tanda_tangan || null,
+        tanda_tangan: lurah?.tanda_tangan || null,
       },
       file
     );
@@ -2342,82 +2326,9 @@ app.post(
       [nomorSuratKeluar, tujuan.trim(), perihal.trim(), isi_surat.trim(), file, req.user.id, lurah?.id || req.user.id]
     );
 
-    await notifRole('lurah', `📤 Surat dinas keluar baru diterbitkan: "${perihal}" kepada ${tujuan} (Nomor: ${nomorSuratKeluar})`);
-    await log(req, 'BUAT_SURAT_KELUAR', `Nomor: ${nomorSuratKeluar}, Tujuan: ${tujuan}`);
-
-    res.status(201).json({
-      id: r[0]?.id || r.insertId,
-      nomor_surat: nomorSuratKeluar,
-      message: 'Surat dinas resmi berhasil dibuat dan diarsipkan',
-    });
-  })
-);
-
-
-
-// Buat Surat Keluar / Surat Dinas Mandiri oleh Lurah, Petugas, atau Admin
-app.post(
-  '/api/surat-keluar',
-  auth,
-  role('petugas', 'lurah', 'admin'),
-  ah(async (req, res) => {
-    const { tujuan, perihal, isi_surat } = req.body;
-    if (!tujuan || !tujuan.trim()) throw fail(400, 'Tujuan / penerima surat dinas wajib diisi');
-    if (!perihal || !perihal.trim()) throw fail(400, 'Perihal surat wajib diisi');
-    if (!isi_surat || !isi_surat.trim()) throw fail(400, 'Isi redaksi surat dinas wajib diisi');
-
-    const now = new Date();
-    const tahun = now.getFullYear();
-    const countKeluar = await q('SELECT COUNT(*) AS c FROM surat_keluar WHERE EXTRACT(YEAR FROM created_at) = ?', [tahun]);
-    const n = parseInt(countKeluar[0]?.c || 0, 10) + 1;
-    const nomorSuratKeluar = `005/${String(n).padStart(3, '0')}/KEL-SKM/${ROM[now.getMonth()]}/${tahun}`;
-
-    // Ambil data profil desa & kop surat
-    const [desaList] = await q('SELECT * FROM profil_desa ORDER BY id ASC LIMIT 1');
-    const kop = desaList || {
-      nama_desa: 'Kelurahan Suka Maju',
-      kecamatan: 'Kecamatan Medan Johor',
-      kabupaten_kota: 'Pemerintah Kota Medan',
-      provinsi: 'Sumatera Utara',
-      alamat: 'Jl. STM No. 40, Kelurahan Suka Maju',
-      kode_pos: '20146',
-      telepon: '0823-4123-5734',
-    };
-
-    // Ambil data lurah penandatangan
-    const [lurah] = await q("SELECT id, nama, jabatan, nip, tanda_tangan FROM users WHERE role = 'lurah' AND aktif = 1 ORDER BY id ASC LIMIT 1");
-
-    const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
-    fs.mkdirSync(storageDir, { recursive: true });
-    const kodeFile = crypto.randomBytes(6).toString('hex');
-    const file = path.join(storageDir, `Surat-Dinas-${kodeFile}.pdf`);
-
-    const tanggalStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
-
-    // Buat PDF surat dinas resmi dengan KOP Kelurahan Dinamis & TTE Lurah Asli
-    await buatPdfSuratDinas(
-      {
-        nomor: nomorSuratKeluar,
-        tujuan: tujuan.trim(),
-        perihal: perihal.trim(),
-        isi: isi_surat.trim(),
-        tanggal: tanggalStr,
-        kop,
-        lurah: lurah?.nama || kop.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
-        nip: lurah?.nip || kop.nip_lurah || '198506122010011005',
-        jabatan: lurah?.jabatan || kop.jabatan_lurah || 'Lurah Suka Maju',
-        tanda_tangan: lurah?.tanda_tangan || req.user.tanda_tangan || null,
-      },
-      file
-    );
-
-    const [r] = await db.query(
-      `INSERT INTO surat_keluar (nomor_surat, tujuan, perihal, isi_surat, tanggal_surat, file_path, petugas_id, ditandatangani_oleh, status)
-       VALUES (?, ?, ?, ?, CURRENT_DATE, ?, ?, ?, 'dikirim') RETURNING id`,
-      [nomorSuratKeluar, tujuan.trim(), perihal.trim(), isi_surat.trim(), file, req.user.id, lurah?.id || req.user.id]
-    );
-
-    await notifRole('lurah', `📤 Surat dinas keluar baru diterbitkan: "${perihal}" kepada ${tujuan} (Nomor: ${nomorSuratKeluar})`);
+    if (req.user.role !== 'lurah') {
+      await notifRole('lurah', `📤 Surat dinas keluar baru diterbitkan oleh ${req.user.nama}: "${perihal}" kepada ${tujuan} (Nomor: ${nomorSuratKeluar})`);
+    }
     await log(req, 'BUAT_SURAT_KELUAR', `Nomor: ${nomorSuratKeluar}, Tujuan: ${tujuan}`);
 
     res.status(201).json({
@@ -2432,7 +2343,7 @@ app.post(
 app.get(
   '/api/surat-keluar/:id/pdf',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const sk = await q('SELECT * FROM surat_keluar WHERE id = ?', [req.params.id]);
     if (!sk.length) throw fail(404, 'Data surat keluar tidak ditemukan');
@@ -2446,7 +2357,7 @@ app.get(
       const kodeFile = crypto.randomBytes(6).toString('hex');
       const newFile = path.join(storageDir, `Surat-Keluar-${kodeFile}.pdf`);
 
-      const [lurah] = await q("SELECT nama, nip FROM users WHERE id = ?", [s.ditandatangani_oleh]);
+      const [lurah] = await q("SELECT nama, nip, jabatan, tanda_tangan FROM users WHERE id = ?", [s.ditandatangani_oleh]);
       const [profil] = await q('SELECT * FROM profil_desa LIMIT 1');
       const now = new Date(s.tanggal_surat || s.created_at);
       const tanggalStr = now.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -2461,7 +2372,8 @@ app.get(
           kop: profil || {},
           lurah: lurah?.nama || profil?.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.',
           nip: lurah?.nip || profil?.nip_lurah || '198506122010011005',
-          jabatan: profil?.jabatan_lurah || 'Lurah Suka Maju',
+          jabatan: lurah?.jabatan || profil?.jabatan_lurah || 'Lurah Suka Maju',
+          tanda_tangan: lurah?.tanda_tangan || null,
         },
         newFile
       );
@@ -2482,7 +2394,7 @@ app.get(
 app.delete(
   '/api/surat-keluar/:id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const [sk] = await q('SELECT * FROM surat_keluar WHERE id=?', [req.params.id]);
     if (!sk) throw fail(404, 'Surat keluar tidak ditemukan');
@@ -2499,7 +2411,7 @@ app.delete(
 app.delete(
   '/api/surat-masuk/:id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const [sm] = await q('SELECT * FROM surat_masuk WHERE id=?', [req.params.id]);
     if (!sm) throw fail(404, 'Surat masuk tidak ditemukan');
@@ -2514,7 +2426,7 @@ app.delete(
 app.put(
   '/api/pengajuan/:id/redaksi',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const { redaksi, pembuka, penutup, nomor } = req.body;
     const p = await getP(req.params.id, req.user);
@@ -2556,7 +2468,7 @@ app.delete(
       if (['issued'].includes(p.status)) {
         throw fail(400, 'Surat yang sudah terbit resmi tidak dapat dibatalkan');
       }
-    } else if (!['petugas', 'lurah', 'admin'].includes(req.user.role)) {
+    } else if (!['petugas', 'lurah'].includes(req.user.role)) {
       throw fail(403, 'Akses ditolak');
     }
 
@@ -2580,7 +2492,7 @@ app.delete(
 app.delete(
   '/api/arsip/:pengajuan_id',
   auth,
-  role('petugas', 'lurah', 'admin'),
+  role('petugas', 'lurah'),
   ah(async (req, res) => {
     const pid = req.params.pengajuan_id;
     const [s] = await q('SELECT file_path, nomor FROM surat WHERE pengajuan_id=?', [pid]);

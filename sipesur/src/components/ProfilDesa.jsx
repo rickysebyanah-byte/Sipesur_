@@ -96,9 +96,9 @@ export default function ProfilDesa({ userRole }) {
   const [tab, setTab] = useState('identitas');
   const [konfirmHapusLogo, setKonfirmHapusLogo] = useState(false);
 
-  // Role-aware: hanya admin, petugas, lurah yang bisa edit
+  // Role-aware: Admin IT (pengelola portal) & Lurah yang bisa edit konfigurasi identitas & kop
   const role = userRole || 'warga';
-  const bisaEdit = ['admin', 'petugas', 'lurah'].includes(role);
+  const bisaEdit = ['admin', 'lurah'].includes(role);
   const bisaHapus = role === 'admin';
 
   useEffect(() => {
@@ -223,7 +223,7 @@ export default function ProfilDesa({ userRole }) {
           <p className="mt-1.5 text-sm text-slate-600 max-w-xl leading-relaxed">
             {bisaEdit
               ? 'Kelola identitas resmi kelurahan/desa. Setiap perubahan akan langsung memperbarui kop surat pada semua dokumen cetak dan berkas PDF.'
-              : 'Informasi resmi identitas kelurahan/desa. Hubungi administrator atau petugas untuk mengubah data ini.'}
+              : 'Informasi resmi identitas kelurahan/desa. Hubungi IT Administrator atau Lurah untuk mengubah data ini.'}
           </p>
         </div>
         {/* Badge role */}
@@ -231,9 +231,9 @@ export default function ProfilDesa({ userRole }) {
           bisaEdit ? 'bg-brand-700 text-white border-brand-800' : 'bg-slate-100 text-slate-600 border-slate-200'
         }`}>
           {bisaEdit ? (
-            <span>✏️ Mode Edit — {role === 'admin' ? 'Administrator' : role === 'lurah' ? 'Lurah' : 'Petugas'}</span>
+            <span>✏️ Mode Edit — {role === 'admin' ? 'IT Administrator' : 'Lurah'}</span>
           ) : (
-            <span>👁️ Mode Lihat — Warga</span>
+            <span>👁️ Mode Lihat — {role === 'petugas' ? 'Petugas' : 'Warga'}</span>
           )}
         </div>
       </div>
@@ -241,7 +241,7 @@ export default function ProfilDesa({ userRole }) {
       {/* ── PERINGATAN JIKA TIDAK BISA EDIT ── */}
       {!bisaEdit && (
         <Alert type="info">
-          Anda hanya memiliki akses lihat. Hanya <strong>Petugas, Lurah, atau Administrator</strong> yang dapat mengubah data profil desa.
+          Anda hanya memiliki akses lihat. Konfigurasi identitas &amp; kop portal kelurahan dikelola oleh <strong>IT Administrator</strong> atau <strong>Lurah</strong>.
         </Alert>
       )}
 

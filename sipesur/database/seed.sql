@@ -17,11 +17,11 @@ TRUNCATE TABLE surat_keluar, disposisi, surat_masuk, activity_logs, notifikasi,
 -- ============================================================
 INSERT INTO users (nama, email, username, nip, jabatan, telepon, password, role, status_verifikasi, must_change_password, aktif) VALUES
 (
-  'Admin Kelurahan',
+  'Admin IT Kelurahan',
   'admin@sipesur.test',
   'admin',
   '198001012005011001',
-  'Administrator Sistem',
+  'Pranata Komputer / IT Administrator Sistem',
   '081234567890',
   '$2a$10$fop9mOwiRNzSlxn31y5Hf.edXRoDUndD9IhVf5OhC8X3215F5QU2W',
   'admin',

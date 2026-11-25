@@ -53,11 +53,11 @@ function getDefaultData() {
     users: [
       {
         id: 1,
-        nama: 'Admin Kelurahan',
+        nama: 'Admin IT Kelurahan',
         email: 'admin@sipesur.test',
         username: 'admin',
         nip: '198001012005011001',
-        jabatan: 'Administrator Sistem',
+        jabatan: 'Pranata Komputer / IT Administrator Sistem',
         telepon: '081234567890',
         password: pw,
         role: 'admin',
@@ -190,6 +190,7 @@ function getDefaultData() {
     surat: [],
     surat_masuk: [],
     surat_keluar: [],
+    disposisi: [],
     disposisi_surat_masuk: [],
     notifikasi: [],
     activity_logs: [],
@@ -1040,7 +1041,7 @@ function executeLocalSql(sql, params = []) {
     }
   }
 
-  // 11. STATISTIK PUBLIK
+  // 11. STATISTIK PUBLIK & STATS DASHBOARD
   if (upper.includes("SELECT COUNT(*) AS TOTAL FROM PENGAJUAN WHERE STATUS = 'ISSUED'")) {
     return [{ total: (dbData.pengajuan || []).filter((p) => p.status === 'issued').length }];
   }
@@ -1050,6 +1051,265 @@ function executeLocalSql(sql, params = []) {
   if (upper.includes('SELECT COUNT(*) AS TOTAL FROM USERS WHERE ROLE = ?')) {
     const roleArg = params[0] || 'warga';
     return [{ total: (dbData.users || []).filter((u) => u.role === roleArg && u.aktif).length }];
+  }
+  if (upper.includes('SELECT STATUS,COUNT(*)::INT AS N FROM PENGAJUAN')) {
+    let list = dbData.pengajuan || [];
+    if (upper.includes('WHERE P.USER_ID=?') && params.length) {
+      const uid = Number(params[0]);
+      list = list.filter((p) => p.user_id === uid);
+    }
+    const counts = {};
+    for (const p of list) {
+      counts[p.status] = (counts[p.status] || 0) + 1;
+    }
+    return Object.entries(counts).map(([status, n]) => ({ status, n }));
+  }
+  if (upper.includes('SELECT J.NAMA,COUNT(*)::INT AS N FROM PENGAJUAN')) {
+    let list = dbData.pengajuan || [];
+    if (upper.includes('WHERE P.USER_ID=?') && params.length) {
+      const uid = Number(params[0]);
+      list = list.filter((p) => p.user_id === uid);
+    }
+    const counts = {};
+    for (const p of list) {
+      const j = (dbData.jenis_surat || []).find((x) => x.id === p.jenis_surat_id);
+      const name = j?.nama || 'Lainnya';
+      counts[name] = (counts[name] || 0) + 1;
+    }
+    return Object.entries(counts).map(([nama, n]) => ({ nama, n })).sort((a, b) => b.n - a.n);
+  }
+  if (upper.includes('GROUP BY TO_CHAR') && upper.includes('FROM PENGAJUAN')) {
+    let list = dbData.pengajuan || [];
+    if (upper.includes('WHERE P.USER_ID=?') && params.length) {
+      const uid = Number(params[0]);
+      list = list.filter((p) => p.user_id === uid);
+    }
+    const counts = {};
+    for (const p of list) {
+      const ym = String(p.created_at || new Date().toISOString()).slice(0, 7);
+      counts[ym] = (counts[ym] || 0) + 1;
+    }
+    return Object.entries(counts).map(([nama, n]) => ({ nama, n })).sort((a, b) => b.nama.localeCompare(a.nama)).slice(0, 6);
+  }
+
+  // 11b. ACTIVITY LOGS (INSERT & SELECT JOIN USERS)
+  if (upper.startsWith('INSERT INTO ACTIVITY_LOGS')) {
+    dbData.activity_logs = dbData.activity_logs || [];
+    const newId = (dbData.activity_logs.length ? Math.max(...dbData.activity_logs.map((r) => r.id || 0)) : 0) + 1;
+    dbData.activity_logs.unshift({
+      id: newId,
+      user_id: params[0] ? Number(params[0]) : null,
+      aksi: params[1] || '',
+      detail: params[2] || '',
+      ip: params[3] || '',
+      created_at: new Date().toISOString(),
+    });
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+  if (upper.includes('FROM ACTIVITY_LOGS')) {
+    const logs = dbData.activity_logs || [];
+    return [...logs]
+      .sort((a, b) => (b.id || 0) - (a.id || 0))
+      .slice(0, 200)
+      .map((l) => {
+        const u = l.user_id ? (dbData.users || []).find((x) => x.id === l.user_id) : null;
+        return { ...l, nama: u?.nama || null };
+      });
+  }
+
+  // 11c. JENIS SURAT & PERSYARATAN (ADMIN IT)
+  if (upper.startsWith('INSERT INTO JENIS_SURAT')) {
+    dbData.jenis_surat = dbData.jenis_surat || [];
+    const newId = (dbData.jenis_surat.length ? Math.max(...dbData.jenis_surat.map((r) => r.id || 0)) : 0) + 1;
+    let fields = params[3];
+    if (typeof fields === 'string') {
+      try { fields = JSON.parse(fields); } catch (_) { fields = []; }
+    }
+    dbData.jenis_surat.push({
+      id: newId,
+      kode: params[0],
+      nama: params[1],
+      template: params[2] || '',
+      form_fields: fields,
+      aktif: 1,
+    });
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+  if (upper.startsWith('UPDATE JENIS_SURAT SET AKTIF')) {
+    const id = Number(params[0]);
+    const item = (dbData.jenis_surat || []).find((x) => x.id === id);
+    if (item) {
+      item.aktif = item.aktif ? 0 : 1;
+      saveLocalDb();
+    }
+    return [{ rowCount: 1, affectedRows: 1 }];
+  }
+  if (upper.startsWith('UPDATE JENIS_SURAT SET TEMPLATE')) {
+    const id = Number(params[1]);
+    const item = (dbData.jenis_surat || []).find((x) => x.id === id);
+    if (item) {
+      item.template = params[0] || '';
+      saveLocalDb();
+    }
+    return [{ rowCount: 1, affectedRows: 1 }];
+  }
+  if (upper.startsWith('INSERT INTO PERSYARATAN')) {
+    dbData.persyaratan = dbData.persyaratan || [];
+    const newId = (dbData.persyaratan.length ? Math.max(...dbData.persyaratan.map((r) => r.id || 0)) : 0) + 1;
+    dbData.persyaratan.push({
+      id: newId,
+      jenis_surat_id: Number(params[0]),
+      nama: params[1],
+    });
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+
+  // 11d. SURAT MASUK & DISPOSISI (PETUGAS / LURAH)
+  if (upper.startsWith('INSERT INTO SURAT_MASUK')) {
+    dbData.surat_masuk = dbData.surat_masuk || [];
+    const newId = (dbData.surat_masuk.length ? Math.max(...dbData.surat_masuk.map((r) => r.id || 0)) : 0) + 1;
+    dbData.surat_masuk.push({
+      id: newId,
+      nomor_surat: params[0],
+      pengirim: params[1],
+      tanggal_surat: params[2],
+      perihal: params[3],
+      ringkasan_isi: params[4] || '',
+      file_lampiran: params[5] || null,
+      dicatat_oleh: params[6] ? Number(params[6]) : null,
+      status: 'menunggu_disposisi',
+      created_at: new Date().toISOString(),
+    });
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+  if (upper.startsWith('INSERT INTO DISPOSISI')) {
+    dbData.disposisi = dbData.disposisi || [];
+    const newId = (dbData.disposisi.length ? Math.max(...dbData.disposisi.map((r) => r.id || 0)) : 0) + 1;
+    dbData.disposisi.push({
+      id: newId,
+      surat_masuk_id: Number(params[0]),
+      lurah_id: Number(params[1]),
+      tujuan_disposisi: params[2],
+      sifat: params[3] || 'Biasa',
+      arahan: params[4],
+      tanggal_disposisi: new Date().toISOString(),
+    });
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+  if (upper.startsWith('UPDATE SURAT_MASUK SET STATUS')) {
+    const id = Number(params[0]);
+    const sm = (dbData.surat_masuk || []).find((x) => x.id === id);
+    if (sm) {
+      sm.status = upper.includes("'DIBALAS'") ? 'dibalas' : 'didisposisi';
+      saveLocalDb();
+    }
+    return [{ rowCount: 1, affectedRows: 1 }];
+  }
+  if (upper.includes('FROM SURAT_MASUK SM') && upper.includes('LEFT JOIN DISPOSISI')) {
+    let items = [...(dbData.surat_masuk || [])];
+    if (upper.includes('SM.STATUS = ?') && params.length) {
+      const stParam = params[params.length - 1];
+      items = items.filter((sm) => sm.status === stParam);
+    }
+    const list = items.map((sm) => {
+      const u = (dbData.users || []).find((x) => x.id === sm.dicatat_oleh);
+      const d = (dbData.disposisi || []).find((x) => x.surat_masuk_id === sm.id);
+      const sk = (dbData.surat_keluar || []).find((x) => x.surat_masuk_id === sm.id);
+      return {
+        ...sm,
+        pencatat: u?.nama || null,
+        disposisi_id: d?.id || null,
+        disposisi_sifat: d?.sifat || null,
+        tujuan_disposisi: d?.tujuan_disposisi || null,
+        disposisi_arahan: d?.arahan || null,
+        surat_keluar_id: sk?.id || null,
+        nomor_surat_balasan: sk?.nomor_surat || null,
+      };
+    });
+    return list.sort((a, b) => (b.id || 0) - (a.id || 0));
+  }
+  if (upper.includes('FROM SURAT_MASUK SM') && upper.includes('WHERE SM.ID = ?')) {
+    const smId = Number(params[0]);
+    const sm = (dbData.surat_masuk || []).find((x) => x.id === smId);
+    if (!sm) return [];
+    const u = (dbData.users || []).find((x) => x.id === sm.dicatat_oleh);
+    return [{ ...sm, pencatat: u?.nama || null }];
+  }
+  if (upper.includes('FROM DISPOSISI D') && upper.includes('WHERE D.SURAT_MASUK_ID')) {
+    const smId = Number(params[0]);
+    return (dbData.disposisi || [])
+      .filter((d) => d.surat_masuk_id === smId)
+      .map((d) => {
+        const u = (dbData.users || []).find((x) => x.id === d.lurah_id);
+        return { ...d, lurah_nama: u?.nama || null, lurah_jabatan: u?.jabatan || null };
+      })
+      .sort((a, b) => (b.id || 0) - (a.id || 0));
+  }
+
+  // 11e. SURAT KELUAR (PETUGAS / LURAH)
+  if (upper.startsWith('INSERT INTO SURAT_KELUAR')) {
+    dbData.surat_keluar = dbData.surat_keluar || [];
+    const newId = (dbData.surat_keluar.length ? Math.max(...dbData.surat_keluar.map((r) => r.id || 0)) : 0) + 1;
+    const hasSm = upper.includes('SURAT_MASUK_ID');
+    const row = hasSm
+      ? {
+          id: newId,
+          surat_masuk_id: Number(params[0]),
+          nomor_surat: params[1],
+          tujuan: params[2],
+          perihal: params[3],
+          isi_surat: params[4],
+          tanggal_surat: new Date().toISOString().slice(0, 10),
+          file_path: params[5],
+          petugas_id: Number(params[6]),
+          ditandatangani_oleh: Number(params[7]),
+          status: 'dikirim',
+          created_at: new Date().toISOString(),
+        }
+      : {
+          id: newId,
+          surat_masuk_id: null,
+          nomor_surat: params[0],
+          tujuan: params[1],
+          perihal: params[2],
+          isi_surat: params[3],
+          tanggal_surat: new Date().toISOString().slice(0, 10),
+          file_path: params[4],
+          petugas_id: Number(params[5]),
+          ditandatangani_oleh: Number(params[6]),
+          status: 'dikirim',
+          created_at: new Date().toISOString(),
+        };
+    dbData.surat_keluar.push(row);
+    saveLocalDb();
+    return [{ id: newId }];
+  }
+  if (upper.includes('FROM SURAT_KELUAR SK')) {
+    let list = [...(dbData.surat_keluar || [])];
+    if (upper.includes('WHERE SK.SURAT_MASUK_ID = ?') && params.length) {
+      const smId = Number(params[0]);
+      list = list.filter((x) => x.surat_masuk_id === smId);
+    }
+    return list
+      .map((sk) => {
+        const sm = sk.surat_masuk_id ? (dbData.surat_masuk || []).find((x) => x.id === sk.surat_masuk_id) : null;
+        const p = (dbData.users || []).find((x) => x.id === sk.petugas_id);
+        const l = (dbData.users || []).find((x) => x.id === sk.ditandatangani_oleh);
+        return {
+          ...sk,
+          nomor_surat_masuk: sm?.nomor_surat || null,
+          pengirim_asal: sm?.pengirim || null,
+          pembuat: p?.nama || null,
+          pembuat_role: p?.role || null,
+          penandatangan: l?.nama || null,
+        };
+      })
+      .sort((a, b) => (b.id || 0) - (a.id || 0));
   }
 
   // 12. Generic SELECT / INSERT / UPDATE Fallback
@@ -1295,6 +1555,10 @@ const db = {
       return db.query(sql, params);
     },
     async end() {},
+  },
+
+  isLocalMode() {
+    return useLocalFallback || !SUPABASE_URL || !SUPABASE_KEY;
   },
 
   async end() {},

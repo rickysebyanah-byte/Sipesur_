@@ -17,11 +17,11 @@ async function main() {
     // Akun Pemerintahan (Petugas, Lurah, Admin) dan Warga
     const users = [
       {
-        nama: 'Admin Kelurahan',
+        nama: 'Admin IT Kelurahan',
         email: 'admin@sipesur.test',
         username: 'admin',
         nip: '198001012005011001',
-        jabatan: 'Administrator Sistem',
+        jabatan: 'Pranata Komputer / IT Administrator Sistem',
         telepon: '081234567890',
         role: 'admin',
         status_verifikasi: 'terverifikasi',
