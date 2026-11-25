@@ -1141,7 +1141,57 @@ function Login() {
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50/40 to-sky-50/40 flex flex-col justify-center p-4 py-8 sm:p-6">
       <div className="mx-auto w-full max-w-4xl">
         <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg md:grid-cols-12">
-          {/* Panel Kiri: Form Masuk Akun */}
+          {/* Panel Kiri: Identitas Portal & Info Peran (Hijau) */}
+          <div className="md:col-span-5 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-6 sm:p-7 flex flex-col justify-between gap-6">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-3">
+                {desa?.logo_url ? (
+                  <img src={desa.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-white/95 p-1 shadow-xs" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-white font-serif font-bold text-lg flex items-center justify-center shadow-xs">
+                    S
+                  </div>
+                )}
+                <div>
+                  <div className="font-serif text-xl font-bold leading-none tracking-tight text-white">SIPESUR</div>
+                  <div className="mt-1 text-xs text-emerald-100/90 font-medium">{namaDesa}</div>
+                </div>
+              </Link>
+
+              <h2 className="mt-6 font-serif text-2xl font-bold leading-snug text-white">
+                Portal Layanan Surat &amp; Administrasi Terpadu
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
+                Sistem pelayanan digital resmi {namaDesa}, {kecamatan}. Masuk sesuai peran Anda untuk mengakses layanan kependudukan dan tata usaha.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
+                Akses Multi-Peran Terintegrasi
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏠</span>
+                  <span className="truncate font-medium">Warga · Pengajuan &amp; Unduh Surat</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🪪</span>
+                  <span className="truncate font-medium">Petugas · Verifikasi &amp; Tata Usaha</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span className="truncate font-medium">Lurah · ACC, TTE &amp; Disposisi</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🖥️</span>
+                  <span className="truncate font-medium">Admin IT · Sistem &amp; Template</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Panel Kanan: Form Masuk Akun */}
           <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-center">
             <div>
               <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
@@ -1234,56 +1284,6 @@ function Login() {
               <Link to="/" className="font-semibold text-slate-600 hover:text-slate-900">
                 ← Kembali ke Beranda
               </Link>
-            </div>
-          </div>
-
-          {/* Panel Kanan: Warna Hijau Identitas Portal & Kata-kata */}
-          <div className="md:col-span-5 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-6 sm:p-7 flex flex-col justify-between gap-6">
-            <div>
-              <Link to="/" className="inline-flex items-center gap-3">
-                {desa?.logo_url ? (
-                  <img src={desa.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-white/95 p-1 shadow-xs" />
-                ) : (
-                  <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-white font-serif font-bold text-lg flex items-center justify-center shadow-xs">
-                    S
-                  </div>
-                )}
-                <div>
-                  <div className="font-serif text-xl font-bold leading-none tracking-tight text-white">SIPESUR</div>
-                  <div className="mt-1 text-xs text-emerald-100/90 font-medium">{namaDesa}</div>
-                </div>
-              </Link>
-
-              <h2 className="mt-6 font-serif text-2xl font-bold leading-snug text-white">
-                Portal Layanan Surat &amp; Administrasi Terpadu
-              </h2>
-              <p className="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
-                Sistem pelayanan digital resmi {namaDesa}, {kecamatan}. Masuk sesuai peran Anda untuk mengakses layanan kependudukan dan tata usaha.
-              </p>
-            </div>
-
-            <div className="space-y-2 text-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
-                Akses Multi-Peran Terintegrasi
-              </div>
-              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🏠</span>
-                  <span className="truncate font-medium">Warga · Pengajuan &amp; Unduh Surat</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🪪</span>
-                  <span className="truncate font-medium">Petugas · Verifikasi &amp; Tata Usaha</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🏛️</span>
-                  <span className="truncate font-medium">Lurah · ACC, TTE &amp; Disposisi</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🖥️</span>
-                  <span className="truncate font-medium">Admin IT · Sistem &amp; Template</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
