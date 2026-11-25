@@ -64,7 +64,7 @@ async function main() {
         tempat_lahir: 'Medan',
         tanggal_lahir: '1990-01-01',
         jenis_kelamin: 'L',
-        alamat: 'Jl. STM No. 5 RT 02/RW 03, Suka Maju, Medan Johor',
+        alamat: 'Jl. STM No. 38 RT 02/RW 03 (Dekat Kantor Lurah), Kelurahan Suka Maju, Medan Johor',
         pekerjaan: 'Karyawan Swasta',
       },
       {

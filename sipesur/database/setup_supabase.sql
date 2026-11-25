@@ -482,7 +482,7 @@ INSERT INTO users (nama,email,username,nip,jabatan,telepon,password,role,status_
 
 INSERT INTO warga (user_id,nik,no_kk,tempat_lahir,tanggal_lahir,jenis_kelamin,alamat,pekerjaan,telepon)
 SELECT id,'3201010101900001','3201010101900002','Medan','1990-01-01','L',
-       'Jl. STM No. 15 RT 02/RW 03, Kelurahan Suka Maju, Medan Johor','Karyawan Swasta','081200000001'
+       'Jl. STM No. 38 RT 02/RW 03 (Dekat Kantor Lurah), Kelurahan Suka Maju, Medan Johor','Karyawan Swasta','081200000001'
 FROM users WHERE username='3201010101900001';
 
 INSERT INTO warga (user_id,nik,no_kk,tempat_lahir,tanggal_lahir,jenis_kelamin,alamat,pekerjaan,telepon)

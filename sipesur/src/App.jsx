@@ -78,13 +78,13 @@ const ROLE_THEME = {
     bar: 'bg-indigo-600',
   },
   admin: {
-    border: 'border-violet-700',
-    navActive: 'border-violet-700 bg-violet-50 font-bold text-violet-950',
-    pill: 'bg-violet-100 text-violet-900 border-violet-300',
-    profileBox: 'bg-violet-50/40',
-    brandText: 'text-violet-950',
-    mainBg: 'bg-violet-50/20',
-    bar: 'bg-violet-600',
+    border: 'border-cyan-600',
+    navActive: 'border-cyan-600 bg-cyan-50 font-bold text-cyan-950',
+    pill: 'bg-cyan-100 text-cyan-900 border-cyan-300',
+    profileBox: 'bg-cyan-50/40',
+    brandText: 'text-cyan-900',
+    mainBg: 'bg-cyan-50/20',
+    bar: 'bg-cyan-600',
   },
 };
 
@@ -92,44 +92,37 @@ const WARGA_LOCKED_PATHS = ['/app/ajukan', '/app/pengajuan', '/app/surat'];
 
 const MENU = {
   warga: [
-    ['/app', 'Beranda', '🏠'],
-    ['/app/ajukan', 'Ajukan surat', '📝'],
-    ['/app/pengajuan', 'Pengajuan saya', '📋'],
-    ['/app/surat', 'Surat saya', '📜'],
-    ['/app/berita', 'Berita & Pengumuman', '📰'],
-    ['/app/profil', 'Profil kependudukan', '🪪'],
+    ['/app', 'Beranda'],
+    ['/app/ajukan', 'Ajukan Surat'],
+    ['/app/pengajuan', 'Pengajuan Saya'],
+    ['/app/surat', 'Surat Saya'],
+    ['/app/profil', 'Profil Saya'],
   ],
   petugas: [
-    ['/app', 'Beranda Loket', '🏠'],
-    ['/app/verifikasi-warga', 'Verifikasi Akun Warga', '🪪'],
-    ['/app/pengajuan', 'Pemeriksaan Surat Warga', '📥'],
-    ['/app/surat-masuk', 'Surat Masuk & Balasan', '📨'],
-    ['/app/surat-keluar', 'Surat Keluar Kedinasan', '📤'],
-    ['/app/arsip', 'Arsip Surat Warga', '🗂️'],
-    ['/app/berita', 'Berita & Pengumuman', '📰'],
-    ['/app/umkm', 'Direktori UMKM', '🏪'],
-    ['/app/galeri', 'Galeri Kegiatan', '🖼️'],
-    ['/app/profil', 'Profil & Paraf Petugas', '✍️'],
+    ['/app', 'Beranda'],
+    ['/app/verifikasi-warga', 'Verifikasi Warga'],
+    ['/app/pengajuan', 'Pemeriksaan Surat'],
+    ['/app/surat-masuk', 'Surat Masuk'],
+    ['/app/surat-keluar', 'Surat Keluar'],
+    ['/app/arsip', 'Arsip Surat'],
+    ['/app/berita', 'Berita & Info'],
   ],
   lurah: [
-    ['/app', 'Beranda Pimpinan', '🏛️'],
-    ['/app/pengajuan', 'ACC & TTE Surat Warga', '✍️'],
-    ['/app/surat-masuk', 'Disposisi Surat Masuk', '📨'],
-    ['/app/surat-keluar', 'Surat Dinas Keluar', '📤'],
-    ['/app/verifikasi-warga', 'Supervisi Warga', '👥'],
-    ['/app/arsip', 'Arsip Surat Resmi', '🗂️'],
-    ['/app/anggaran', 'Anggaran Kelurahan', '💰'],
-    ['/app/berita', 'Berita & Kebijakan', '📰'],
-    ['/app/profil-desa', 'Identitas & Kop Lurah', '🏢'],
-    ['/app/profil', 'Profil & TTE Lurah', '🖋️'],
+    ['/app', 'Beranda'],
+    ['/app/pengajuan', 'ACC & TTE Surat'],
+    ['/app/surat-masuk', 'Disposisi Surat'],
+    ['/app/surat-keluar', 'Surat Keluar'],
+    ['/app/arsip', 'Arsip Surat'],
+    ['/app/anggaran', 'Anggaran'],
+    ['/app/profil', 'Profil & TTE'],
   ],
   admin: [
-    ['/app', 'Beranda IT & Sistem', '🖥️'],
-    ['/app/pengguna', 'Manajemen Pengguna & Peran', '👥'],
-    ['/app/jenis', 'Master Surat & Template', '📋'],
-    ['/app/profil-desa', 'Konfigurasi Portal & Kop', '⚙️'],
-    ['/app/log', 'Audit Log & Keamanan', '🛡️'],
-    ['/app/profil', 'Profil & Keamanan IT', '🔐'],
+    ['/app', 'Beranda IT'],
+    ['/app/pengguna', 'Pengguna & Peran'],
+    ['/app/jenis', 'Master Jenis Surat'],
+    ['/app/profil-desa', 'Konfigurasi Portal'],
+    ['/app/log', 'Log Aktivitas'],
+    ['/app/profil', 'Profil Admin'],
   ],
 };
 
@@ -1137,7 +1130,7 @@ function Login() {
     ['Warga', '3201010101900001', 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'],
     ['Petugas', 'petugas', 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'],
     ['Lurah', 'lurah', 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100'],
-    ['IT Admin', 'admin', 'bg-violet-50 text-violet-800 border-violet-200 hover:bg-violet-100'],
+    ['IT Admin', 'admin', 'bg-cyan-50 text-cyan-800 border-cyan-200 hover:bg-cyan-100'],
   ];
 
   return (
@@ -1597,7 +1590,7 @@ function Layout() {
   const mustChangePw = user?.must_change_password;
   const isPendingWarga = user?.role === 'warga' && user?.status_verifikasi === 'menunggu_verifikasi';
   const unread = (n || []).filter((x) => !x.dibaca).length;
-  const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi', '🔔']];
+  const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi']];
   const namaDesaNav = desa?.nama_desa || 'Pelayanan Kelurahan';
   const theme = ROLE_THEME[user?.role] || ROLE_THEME.warga;
 
@@ -1673,7 +1666,7 @@ function Layout() {
         </div>
 
         <nav className="min-h-0 flex-1 overflow-y-auto py-2" onClick={() => setOpen(false)} aria-label="Menu utama">
-          {items.map(([to, l, icon = '•']) => {
+          {items.map(([to, l]) => {
             const isLocked = isPendingWarga && WARGA_LOCKED_PATHS.includes(to);
             return (
               <div key={to}>
@@ -1690,10 +1683,7 @@ function Layout() {
                       : 'border-transparent text-slate-800 hover:bg-slate-100')
                   }
                 >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-sm shrink-0">{icon}</span>
-                    <span className="truncate">{l}</span>
-                  </span>
+                  <span className="truncate">{l}</span>
                   {isLocked && (
                     <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-semibold shrink-0" title="Terkunci hingga akun diverifikasi">
                       🔒
@@ -2067,23 +2057,23 @@ function DashboardAdminIT({ user, dateStr }) {
   return (
     <div className="space-y-5">
       {/* Banner Pusat Kendali IT */}
-      <div className="rounded-2xl border border-violet-900/40 bg-gradient-to-br from-slate-900 via-violet-950 to-slate-900 text-white p-5 sm:p-6 shadow-md">
+      <div className="rounded-2xl border border-cyan-200 bg-gradient-to-r from-white via-cyan-50/70 to-sky-50/50 text-slate-900 p-5 sm:p-6 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3 py-0.5 text-[11px] font-bold text-emerald-300 mb-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-0.5 text-[11px] font-bold text-emerald-800 mb-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>KONSOL IT ADMINISTRATOR • SISTEM ONLINE</span>
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
-            <p className="mt-1 text-xs sm:text-sm text-slate-300">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-slate-950">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-600">
               {user.jabatan || 'Pranata Komputer / IT Administrator SIPESUR'} • {dateStr}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link to="/app/pengguna" className="rounded-lg bg-white text-slate-900 hover:bg-slate-100 px-3.5 py-2 text-xs font-bold transition-colors">
+            <Link to="/app/pengguna" className="rounded-lg bg-cyan-700 text-white hover:bg-cyan-800 px-3.5 py-2 text-xs font-bold transition-colors shadow-2xs">
               + Kelola Akun &amp; Role
             </Link>
-            <Link to="/app/jenis" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-semibold transition-colors">
+            <Link to="/app/jenis" className="rounded-lg border border-cyan-300 bg-white hover:bg-cyan-50 text-cyan-900 px-3.5 py-2 text-xs font-semibold transition-colors">
               Konfigurasi Template Surat
             </Link>
           </div>
@@ -2093,8 +2083,8 @@ function DashboardAdminIT({ user, dateStr }) {
       {/* 4 Kartu Metrik IT */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
         {metrics.map((m, i) => {
-          const cardTints = ['from-white to-violet-50/40', 'from-white to-emerald-50/40', 'from-white to-sky-50/40', 'from-white to-amber-50/40'];
-          const pillTints = ['bg-violet-50 text-violet-700 border-violet-200', 'bg-emerald-50 text-emerald-700 border-emerald-200', 'bg-sky-50 text-sky-700 border-sky-200', 'bg-amber-50 text-amber-700 border-amber-200'];
+          const cardTints = ['from-white to-cyan-50/40', 'from-white to-emerald-50/40', 'from-white to-sky-50/40', 'from-white to-amber-50/40'];
+          const pillTints = ['bg-cyan-50 text-cyan-700 border-cyan-200', 'bg-emerald-50 text-emerald-700 border-emerald-200', 'bg-sky-50 text-sky-700 border-sky-200', 'bg-amber-50 text-amber-700 border-amber-200'];
           const icons = ['👥', '🛡️', '📋', '🔐'];
           return (
             <div key={m.label} className={`rounded-xl border border-slate-200 bg-gradient-to-br ${cardTints[i % 4]} p-4 shadow-2xs ${m.accent}`}>
@@ -5487,7 +5477,7 @@ function Pengguna() {
                   <td className="py-3 px-3 text-xs text-slate-600">{x.jabatan || x.nip || '-'}</td>
                   <td className="py-3 px-3">
                     <span className={`badge text-[11px] font-bold capitalize ${
-                      x.role === 'admin' ? 'bg-violet-100 text-violet-900 border-violet-200' :
+                      x.role === 'admin' ? 'bg-cyan-100 text-cyan-900 border-cyan-200' :
                       x.role === 'lurah' ? 'bg-indigo-100 text-indigo-900 border-indigo-200' :
                       x.role === 'petugas' ? 'bg-sky-100 text-sky-900 border-sky-200' :
                       'bg-emerald-50 text-emerald-800 border-emerald-200'
