@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, createContext, useContext } from 'react';
-import { BrowserRouter, Routes, Route, Navigate, Link, NavLink, Outlet, useNavigate, useParams } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Link, NavLink, Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
 import api, { openBlob, downloadPdf, viewPdf, getFileUrl } from './api';
 import SignaturePad from './components/SignaturePad';
 import ModalCetakSurat from './components/ModalCetakSurat';
@@ -52,39 +52,67 @@ const ROLE_LABEL = {
 const ROLE_THEME = {
   warga: {
     border: 'border-emerald-700',
-    navActive: 'border-emerald-700 bg-emerald-50 font-bold text-emerald-950',
+    navActive: 'border-emerald-600 bg-gradient-to-r from-emerald-50 to-teal-50/60 font-bold text-emerald-950',
+    iconActive: 'bg-emerald-600 text-white shadow-2xs',
+    iconIdle: 'bg-emerald-50 text-emerald-700',
     pill: 'bg-emerald-100 text-emerald-900 border-emerald-300',
-    profileBox: 'bg-emerald-50/40',
+    avatarBg: 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white',
+    headerGrad: 'from-emerald-900 via-teal-800 to-emerald-900',
+    profileBox: 'bg-gradient-to-br from-emerald-50/70 to-teal-50/40',
     brandText: 'text-emerald-900',
-    mainBg: 'bg-emerald-50/25',
+    mainBg: 'bg-gradient-to-br from-slate-50 via-emerald-50/25 to-teal-50/30',
     bar: 'bg-emerald-600',
+    quickLabel: '+ Ajukan Surat',
+    quickTo: '/app/ajukan',
+    quickBtn: 'bg-emerald-600 hover:bg-emerald-700 text-white',
   },
   petugas: {
     border: 'border-sky-700',
-    navActive: 'border-sky-700 bg-sky-50 font-bold text-sky-950',
+    navActive: 'border-sky-600 bg-gradient-to-r from-sky-50 to-blue-50/60 font-bold text-sky-950',
+    iconActive: 'bg-sky-600 text-white shadow-2xs',
+    iconIdle: 'bg-sky-50 text-sky-700',
     pill: 'bg-sky-100 text-sky-900 border-sky-300',
-    profileBox: 'bg-sky-50/40',
+    avatarBg: 'bg-gradient-to-br from-sky-600 to-blue-700 text-white',
+    headerGrad: 'from-sky-900 via-sky-800 to-blue-900',
+    profileBox: 'bg-gradient-to-br from-sky-50/70 to-blue-50/40',
     brandText: 'text-sky-900',
-    mainBg: 'bg-sky-50/25',
+    mainBg: 'bg-gradient-to-br from-slate-50 via-sky-50/25 to-blue-50/30',
     bar: 'bg-sky-600',
+    quickLabel: '📥 Antrean Surat',
+    quickTo: '/app/pengajuan',
+    quickBtn: 'bg-sky-600 hover:bg-sky-700 text-white',
   },
   lurah: {
     border: 'border-indigo-800',
-    navActive: 'border-indigo-700 bg-indigo-50 font-bold text-indigo-950',
+    navActive: 'border-indigo-700 bg-gradient-to-r from-indigo-50 to-amber-50/40 font-bold text-indigo-950',
+    iconActive: 'bg-indigo-700 text-white shadow-2xs',
+    iconIdle: 'bg-indigo-50 text-indigo-700',
     pill: 'bg-indigo-100 text-indigo-900 border-indigo-300',
-    profileBox: 'bg-indigo-50/40',
+    avatarBg: 'bg-gradient-to-br from-indigo-700 to-slate-900 text-white',
+    headerGrad: 'from-indigo-950 via-indigo-900 to-slate-900',
+    profileBox: 'bg-gradient-to-br from-indigo-50/70 to-amber-50/30',
     brandText: 'text-indigo-950',
-    mainBg: 'bg-indigo-50/25',
+    mainBg: 'bg-gradient-to-br from-slate-50 via-indigo-50/25 to-amber-50/20',
     bar: 'bg-indigo-600',
+    quickLabel: '✍️ ACC & TTE Surat',
+    quickTo: '/app/pengajuan',
+    quickBtn: 'bg-indigo-700 hover:bg-indigo-800 text-white',
   },
   admin: {
     border: 'border-violet-700',
-    navActive: 'border-violet-700 bg-violet-50 font-bold text-violet-950',
+    navActive: 'border-violet-700 bg-gradient-to-r from-violet-50 to-purple-50/60 font-bold text-violet-950',
+    iconActive: 'bg-violet-700 text-white shadow-2xs',
+    iconIdle: 'bg-violet-50 text-violet-700',
     pill: 'bg-violet-100 text-violet-900 border-violet-300',
-    profileBox: 'bg-violet-50/40',
+    avatarBg: 'bg-gradient-to-br from-violet-700 to-purple-800 text-white',
+    headerGrad: 'from-slate-900 via-violet-950 to-slate-900',
+    profileBox: 'bg-gradient-to-br from-violet-50/70 to-purple-50/40',
     brandText: 'text-violet-950',
-    mainBg: 'bg-violet-50/25',
+    mainBg: 'bg-gradient-to-br from-slate-50 via-violet-50/25 to-purple-50/25',
     bar: 'bg-violet-600',
+    quickLabel: '🛡️ Audit Log',
+    quickTo: '/app/log',
+    quickBtn: 'bg-violet-700 hover:bg-violet-800 text-white',
   },
 };
 
@@ -92,44 +120,44 @@ const WARGA_LOCKED_PATHS = ['/app/ajukan', '/app/pengajuan', '/app/surat'];
 
 const MENU = {
   warga: [
-    ['/app', 'Beranda'],
-    ['/app/ajukan', 'Ajukan surat'],
-    ['/app/pengajuan', 'Pengajuan saya'],
-    ['/app/surat', 'Surat saya'],
-    ['/app/berita', 'Berita & Pengumuman'],
-    ['/app/profil', 'Profil kependudukan'],
+    ['/app', 'Beranda', '🏠'],
+    ['/app/ajukan', 'Ajukan surat', '📝'],
+    ['/app/pengajuan', 'Pengajuan saya', '📋'],
+    ['/app/surat', 'Surat saya', '📜'],
+    ['/app/berita', 'Berita & Pengumuman', '📰'],
+    ['/app/profil', 'Profil kependudukan', '🪪'],
   ],
   petugas: [
-    ['/app', 'Beranda Loket'],
-    ['/app/verifikasi-warga', 'Verifikasi Akun Warga'],
-    ['/app/pengajuan', 'Pemeriksaan Surat Warga'],
-    ['/app/surat-masuk', 'Surat Masuk & Balasan'],
-    ['/app/surat-keluar', 'Surat Keluar Kedinasan'],
-    ['/app/arsip', 'Arsip Surat Warga'],
-    ['/app/berita', 'Berita & Pengumuman'],
-    ['/app/umkm', 'Direktori UMKM'],
-    ['/app/galeri', 'Galeri Kegiatan'],
-    ['/app/profil', 'Profil & Paraf Petugas'],
+    ['/app', 'Beranda Loket', '🏠'],
+    ['/app/verifikasi-warga', 'Verifikasi Akun Warga', '🪪'],
+    ['/app/pengajuan', 'Pemeriksaan Surat Warga', '📥'],
+    ['/app/surat-masuk', 'Surat Masuk & Balasan', '📨'],
+    ['/app/surat-keluar', 'Surat Keluar Kedinasan', '📤'],
+    ['/app/arsip', 'Arsip Surat Warga', '🗂️'],
+    ['/app/berita', 'Berita & Pengumuman', '📰'],
+    ['/app/umkm', 'Direktori UMKM', '🏪'],
+    ['/app/galeri', 'Galeri Kegiatan', '🖼️'],
+    ['/app/profil', 'Profil & Paraf Petugas', '✍️'],
   ],
   lurah: [
-    ['/app', 'Beranda Pimpinan'],
-    ['/app/pengajuan', 'ACC & TTE Surat Warga'],
-    ['/app/surat-masuk', 'Disposisi Surat Masuk'],
-    ['/app/surat-keluar', 'Surat Dinas Keluar'],
-    ['/app/verifikasi-warga', 'Supervisi Warga'],
-    ['/app/arsip', 'Arsip Surat Resmi'],
-    ['/app/anggaran', 'Anggaran Kelurahan'],
-    ['/app/berita', 'Berita & Kebijakan'],
-    ['/app/profil-desa', 'Identitas & Kop Lurah'],
-    ['/app/profil', 'Profil & TTE Lurah'],
+    ['/app', 'Beranda Pimpinan', '🏛️'],
+    ['/app/pengajuan', 'ACC & TTE Surat Warga', '✍️'],
+    ['/app/surat-masuk', 'Disposisi Surat Masuk', '📨'],
+    ['/app/surat-keluar', 'Surat Dinas Keluar', '📤'],
+    ['/app/verifikasi-warga', 'Supervisi Warga', '👥'],
+    ['/app/arsip', 'Arsip Surat Resmi', '🗂️'],
+    ['/app/anggaran', 'Anggaran Kelurahan', '💰'],
+    ['/app/berita', 'Berita & Kebijakan', '📰'],
+    ['/app/profil-desa', 'Identitas & Kop Lurah', '🏢'],
+    ['/app/profil', 'Profil & TTE Lurah', '🖋️'],
   ],
   admin: [
-    ['/app', 'Beranda IT & Sistem'],
-    ['/app/pengguna', 'Manajemen Pengguna & Peran'],
-    ['/app/jenis', 'Master Surat & Template'],
-    ['/app/profil-desa', 'Konfigurasi Portal & Kop'],
-    ['/app/log', 'Audit Log & Keamanan'],
-    ['/app/profil', 'Profil & Keamanan IT'],
+    ['/app', 'Beranda IT & Sistem', '🖥️'],
+    ['/app/pengguna', 'Manajemen Pengguna & Peran', '👥'],
+    ['/app/jenis', 'Master Surat & Template', '📋'],
+    ['/app/profil-desa', 'Konfigurasi Portal & Kop', '⚙️'],
+    ['/app/log', 'Audit Log & Keamanan', '🛡️'],
+    ['/app/profil', 'Profil & Keamanan IT', '🔐'],
   ],
 };
 
@@ -1113,10 +1141,14 @@ function Center({ title, subtitle, children, maxWidth = 'max-w-md' }) {
 function Login() {
   const { login } = useAuth();
   const nav = useNavigate();
+  const [desa] = useGet('/profil-desa');
   const [f, setF] = useState({ identifier: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [m, setM] = useState();
+
+  const namaDesa = desa?.nama_desa || 'Kelurahan Suka Maju';
+  const kecamatan = desa?.kecamatan || 'Kecamatan Medan Johor';
 
   const go = async (e) => {
     e.preventDefault();
@@ -1133,68 +1165,165 @@ function Login() {
     }
   };
 
+  const quickAccounts = [
+    { label: 'Warga', id: '3201010101900001', icon: '🏠', cls: 'border-emerald-200 bg-emerald-50/80 text-emerald-900 hover:border-emerald-400 hover:bg-emerald-100/70' },
+    { label: 'Petugas', id: 'petugas', icon: '🪪', cls: 'border-sky-200 bg-sky-50/80 text-sky-900 hover:border-sky-400 hover:bg-sky-100/70' },
+    { label: 'Lurah', id: 'lurah', icon: '🏛️', cls: 'border-indigo-200 bg-indigo-50/80 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100/70' },
+    { label: 'IT Admin', id: 'admin', icon: '🖥️', cls: 'border-violet-200 bg-violet-50/80 text-violet-900 hover:border-violet-400 hover:bg-violet-100/70' },
+  ];
+
   return (
-    <Center
-      title="Masuk"
-      subtitle="Warga masuk dengan NIK atau email. Petugas dan lurah dengan NIP atau username."
-    >
-      <form onSubmit={go}>
-        <Field l="NIK, NIP, username, atau email" req>
-          <input
-            className="inp"
-            required
-            autoFocus
-            autoComplete="username"
-            value={f.identifier}
-            onChange={(e) => setF({ ...f, identifier: e.target.value })}
-          />
-        </Field>
-        <Field l="Password" req>
-          <div className="relative">
-            <input
-              className="inp pr-24"
-              type={showPw ? 'text' : 'password'}
-              required
-              autoComplete="current-password"
-              value={f.password}
-              onChange={(e) => setF({ ...f, password: e.target.value })}
-            />
-            <button
-              type="button"
-              aria-pressed={showPw}
-              className="absolute inset-y-0 right-0 px-3 text-sm font-bold text-brand-700 hover:text-brand-900"
-              onClick={() => setShowPw(!showPw)}
-            >
-              {showPw ? 'Sembunyikan' : 'Tampilkan'}
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50/40 to-sky-50/40 flex flex-col justify-center p-4 py-8 sm:p-6">
+      <div className="mx-auto w-full max-w-4xl">
+        <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg md:grid-cols-12">
+          {/* Panel Kiri: Identitas Portal & Info Peran */}
+          <div className="md:col-span-5 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-6 sm:p-7 flex flex-col justify-between gap-6">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-3">
+                {desa?.logo_url ? (
+                  <img src={desa.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-white/95 p-1 shadow-xs" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-white font-serif font-bold text-lg flex items-center justify-center shadow-xs">
+                    S
+                  </div>
+                )}
+                <div>
+                  <div className="font-serif text-xl font-bold leading-none tracking-tight text-white">SIPESUR</div>
+                  <div className="mt-1 text-xs text-emerald-100/90 font-medium">{namaDesa}</div>
+                </div>
+              </Link>
+
+              <h2 className="mt-6 font-serif text-2xl font-bold leading-snug text-white">
+                Portal Layanan Surat & Administrasi Terpadu
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
+                Sistem pelayanan digital resmi {namaDesa}, {kecamatan}. Masuk sesuai peran Anda untuk mengakses layanan kependudukan dan tata usaha.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
+                Akses Multi-Peran Terintegrasi
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏠</span>
+                  <span className="truncate font-medium">Warga · Pengajuan & Unduh Surat</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🪪</span>
+                  <span className="truncate font-medium">Petugas · Verifikasi & Tata Usaha</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span className="truncate font-medium">Lurah · ACC, TTE & Disposisi</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🖥️</span>
+                  <span className="truncate font-medium">Admin IT · Sistem & Template</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </Field>
 
-        <Msg m={m} />
+          {/* Panel Kanan: Form Masuk Akun */}
+          <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                🔐 Autentikasi Akun
+              </span>
+              <h1 className="mt-2.5 font-serif text-2xl font-bold text-slate-950">Masuk ke Akun Anda</h1>
+              <p className="mt-1 text-xs sm:text-sm text-slate-600">
+                Warga menggunakan <strong>NIK / email</strong>. Petugas, Lurah, dan Admin IT menggunakan <strong>NIP / username</strong>.
+              </p>
+            </div>
 
-        <button className="btn btn-p w-full" disabled={loading}>
-          {loading ? 'Memeriksa…' : 'Masuk'}
-        </button>
-      </form>
+            <form onSubmit={go} className="mt-5 space-y-1">
+              <Field l="NIK, NIP, Username, atau Email" req>
+                <input
+                  className="inp rounded-lg"
+                  placeholder="Contoh: 3201010101900001, petugas, lurah, atau admin"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                  value={f.identifier}
+                  onChange={(e) => setF({ ...f, identifier: e.target.value })}
+                />
+              </Field>
+              <Field l="Password" req>
+                <div className="relative">
+                  <input
+                    className="inp rounded-lg pr-24"
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="Masukkan password akun"
+                    required
+                    autoComplete="current-password"
+                    value={f.password}
+                    onChange={(e) => setF({ ...f, password: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    aria-pressed={showPw}
+                    className="absolute inset-y-0 right-0 px-3 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900"
+                    onClick={() => setShowPw(!showPw)}
+                  >
+                    {showPw ? 'Sembunyikan' : 'Tampilkan'}
+                  </button>
+                </div>
+              </Field>
 
-      <details className="mt-5 border border-slate-300 bg-slate-50 p-3 text-sm text-slate-700">
-        <summary className="cursor-pointer font-bold text-slate-900">Akun uji coba</summary>
-        <ul className="mt-2 space-y-1">
-          <li>IT Admin: <code className="font-bold">admin</code></li>
-          <li>Petugas Loket: <code className="font-bold">petugas</code></li>
-          <li>Lurah: <code className="font-bold">lurah</code></li>
-          <li>Warga: <code className="font-bold">3201010101900001</code></li>
-        </ul>
-        <p className="mt-2">Password semua akun uji: <code className="font-bold">Password123</code></p>
-      </details>
+              <Msg m={m} />
 
-      <p className="mt-5 text-center text-sm text-slate-700">
-        Belum punya akun warga?{' '}
-        <Link className="font-bold text-brand-700 underline underline-offset-2 hover:text-brand-900" to="/register">
-          Daftar
-        </Link>
-      </p>
-    </Center>
+              <button
+                className="btn w-full rounded-lg bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white py-2.5 font-bold shadow-sm transition-all"
+                disabled={loading}
+              >
+                {loading ? 'Memeriksa kredensial…' : 'Masuk Sekarang →'}
+              </button>
+            </form>
+
+            {/* Isi Cepat Akun Demo */}
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-1 mb-2.5">
+                <span className="text-xs font-bold text-slate-800">⚡ Isi Cepat Akun Uji Coba</span>
+                <span className="text-[11px] text-slate-500">Password: <code className="font-mono font-bold text-slate-700">Password123</code></span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {quickAccounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => {
+                      setF({ identifier: acc.id, password: 'Password123' });
+                      setM(null);
+                    }}
+                    className={`rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-colors ${acc.cls}`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>{acc.icon}</span>
+                      <span>{acc.label}</span>
+                    </div>
+                    <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-80">{acc.id}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs sm:text-sm text-slate-600 pt-3 border-t border-slate-100">
+              <span>
+                Belum punya akun warga?{' '}
+                <Link className="font-bold text-emerald-700 underline underline-offset-2 hover:text-emerald-900" to="/register">
+                  Daftar Warga Baru
+                </Link>
+              </span>
+              <Link to="/" className="font-semibold text-slate-600 hover:text-slate-900">
+                ← Kembali ke Beranda
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -1572,6 +1701,7 @@ function Verifikasi() {
 
 function Layout() {
   const { user, logout, updateUser } = useAuth();
+  const { pathname } = useLocation();
   const [open, setOpen] = useState(false);
   const [n] = useGet('/notifikasi');
   const [desa] = useGet('/profil-desa');
@@ -1580,107 +1710,155 @@ function Layout() {
   const mustChangePw = user?.must_change_password;
   const isPendingWarga = user?.role === 'warga' && user?.status_verifikasi === 'menunggu_verifikasi';
   const unread = (n || []).filter((x) => !x.dibaca).length;
-  const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi']];
+  const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi', '🔔']];
   const namaDesaNav = desa?.nama_desa || 'Pelayanan Kelurahan';
   const theme = ROLE_THEME[user?.role] || ROLE_THEME.warga;
+  const initials = String(user?.nama || 'U')
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() || '')
+    .join('') || 'U';
+
+  const activeItem =
+    items.find(([to]) => (to === '/app' ? pathname === '/app' : pathname.startsWith(to))) ||
+    items[0] || ['/app', 'Beranda', '🏠'];
+
+  const showQuickBtn = !(isPendingWarga && WARGA_LOCKED_PATHS.includes(theme.quickTo));
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-slate-100 md:flex-row">
-      <header className={`z-30 flex flex-shrink-0 items-center justify-between border-b-[6px] border-double ${theme.border} bg-white px-4 py-2.5 md:hidden`}>
-        <div className="flex items-center gap-2">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-100 md:flex-row">
+      {/* Header Mobile */}
+      <header className={`z-30 flex flex-shrink-0 items-center justify-between border-b-4 ${theme.border} bg-white px-3.5 py-2.5 shadow-2xs md:hidden`}>
+        <div className="flex items-center gap-2.5 min-w-0">
           {desa?.logo_url ? (
-            <img src={desa.logo_url} alt="Logo" className="w-7 h-7 object-contain rounded-xs" />
+            <img src={desa.logo_url} alt="Logo" className="w-8 h-8 object-contain rounded-lg bg-slate-50 p-0.5 border border-slate-200 shrink-0" />
           ) : (
-            <div className="w-7 h-7 rounded-lg bg-brand-700 text-white font-serif font-bold text-sm flex items-center justify-center shadow-xs">
+            <div className={`w-8 h-8 rounded-lg font-serif font-bold text-sm flex items-center justify-center shadow-xs shrink-0 ${theme.avatarBg}`}>
               S
             </div>
           )}
-          <div>
-            <div className={`font-serif text-lg font-bold leading-none ${theme.brandText}`}>SIPESUR</div>
-            <div className="mt-0.5 text-xs text-slate-600 truncate max-w-[170px]">{namaDesaNav}</div>
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className={`font-serif text-base font-bold leading-none ${theme.brandText}`}>SIPESUR</span>
+              <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-bold border ${theme.pill}`}>
+                {user?.role?.toUpperCase()}
+              </span>
+            </div>
+            <div className="mt-0.5 text-[11px] text-slate-600 truncate">{activeItem[1]} · {namaDesaNav}</div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {unread > 0 && (
-            <Link to="/app/notifikasi" className="badge border-cap bg-white text-cap">
-              {unread} baru
-            </Link>
-          )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Link
+            to="/app/notifikasi"
+            className="relative inline-flex items-center justify-center w-9 h-9 rounded-lg border border-slate-200 bg-slate-50 text-sm hover:bg-slate-100"
+            title="Notifikasi"
+          >
+            <span>🔔</span>
+            {unread > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
+                {unread}
+              </span>
+            )}
+          </Link>
           <button
             type="button"
-            className="btn btn-o px-3 py-1.5"
+            className="btn btn-o px-3 py-1.5 text-xs font-bold rounded-lg"
             aria-expanded={open}
             aria-controls="menu-utama"
             onClick={() => setOpen(!open)}
           >
-            {open ? 'Tutup' : 'Menu'}
+            {open ? '✕ Tutup' : '☰ Menu'}
           </button>
         </div>
       </header>
 
-      {open && <div className="fixed inset-0 z-40 bg-slate-950/50 md:hidden" onClick={() => setOpen(false)} />}
+      {open && <div className="fixed inset-0 z-40 bg-slate-950/50 backdrop-blur-[1px] md:hidden" onClick={() => setOpen(false)} />}
 
+      {/* Sidebar Kiri */}
       <aside
         id="menu-utama"
         className={
-          'fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-72 flex-col overflow-hidden border-r border-slate-300 bg-white transition-transform duration-150 md:static md:h-screen md:w-64 md:flex-shrink-0 md:translate-x-0 ' +
+          'fixed inset-y-0 left-0 z-50 flex h-[100dvh] w-72 flex-col overflow-hidden border-r border-slate-200 bg-white shadow-xl md:shadow-none transition-transform duration-150 md:static md:h-screen md:w-64 lg:w-68 md:flex-shrink-0 md:translate-x-0 ' +
           (open ? 'translate-x-0' : '-translate-x-full md:translate-x-0')
         }
       >
-        <div className={`flex-shrink-0 border-b-[6px] border-double ${theme.border} px-4 py-4`}>
+        <div className={`flex-shrink-0 bg-gradient-to-r ${theme.headerGrad} text-white px-4 py-4`}>
           <div className="flex items-center gap-2.5">
             {desa?.logo_url ? (
-              <img src={desa.logo_url} alt="Logo" className="w-8 h-8 object-contain rounded-xs" />
+              <img src={desa.logo_url} alt="Logo" className="w-9 h-9 object-contain rounded-lg bg-white/95 p-0.5 shadow-xs shrink-0" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-brand-700 text-white font-serif font-bold text-base flex items-center justify-center shadow-xs">
+              <div className="w-9 h-9 rounded-lg bg-white/15 border border-white/25 text-white font-serif font-bold text-base flex items-center justify-center shadow-xs shrink-0">
                 S
               </div>
             )}
             <div className="min-w-0">
-              <div className={`font-serif text-xl font-bold leading-none tracking-tight ${theme.brandText}`}>SIPESUR</div>
-              <div className="mt-1 text-xs text-slate-600 truncate font-medium">{namaDesaNav}</div>
+              <div className="font-serif text-lg font-bold leading-none tracking-tight text-white">SIPESUR</div>
+              <div className="mt-1 text-[11px] text-white/80 truncate font-medium">{namaDesaNav}</div>
             </div>
           </div>
         </div>
 
         <div className={`flex-shrink-0 border-b border-slate-200 px-4 py-3 text-sm ${theme.profileBox}`}>
-          <div className="truncate font-bold text-slate-950">{user?.nama}</div>
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-slate-600">
-            <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[11px] font-bold border ${theme.pill}`}>
-              {ROLE_LABEL[user?.role] || user?.role}
-            </span>
-            {user?.role === 'warga' && <BadgeWarga s={user?.status_verifikasi} />}
+          <div className="flex items-center gap-2.5">
+            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0 shadow-xs ${theme.avatarBg}`}>
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate font-bold text-slate-950 text-sm">{user?.nama}</div>
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
+                <span className={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold border ${theme.pill}`}>
+                  {ROLE_LABEL[user?.role] || user?.role}
+                </span>
+                {user?.role === 'warga' && <BadgeWarga s={user?.status_verifikasi} />}
+              </div>
+            </div>
           </div>
-          {user?.nik_masked && <div className="mt-1 text-xs tabular-nums text-slate-600">NIK {user.nik_masked}</div>}
-          {user?.nip && <div className="mt-1 text-[11px] tabular-nums text-slate-500">NIP. {user.nip}</div>}
+          {user?.nik_masked && <div className="mt-2 text-[11px] tabular-nums text-slate-600">NIK: {user.nik_masked}</div>}
+          {user?.nip && <div className="mt-2 text-[11px] tabular-nums text-slate-600">NIP: {user.nip}</div>}
         </div>
 
-        <nav className="min-h-0 flex-1 overflow-y-auto py-2" onClick={() => setOpen(false)} aria-label="Menu utama">
-          {items.map(([to, l]) => {
+        <nav className="min-h-0 flex-1 overflow-y-auto px-2.5 py-3 space-y-1" onClick={() => setOpen(false)} aria-label="Menu utama">
+          {items.map(([to, l, icon = '•']) => {
             const isLocked = isPendingWarga && WARGA_LOCKED_PATHS.includes(to);
             return (
               <div key={to}>
-                {to === '/app/pengguna' && <div className="mx-4 my-2 border-t border-slate-200" />}
+                {to === '/app/pengguna' && <div className="mx-2 my-2 border-t border-slate-200" />}
                 <NavLink
                   to={to}
                   end={to === '/app'}
                   className={({ isActive }) =>
-                    'flex items-center justify-between gap-2 border-l-4 py-2 pl-3 pr-4 text-sm transition-colors ' +
+                    'group flex items-center justify-between gap-2 rounded-xl border-l-4 py-2 pl-2.5 pr-3 text-[13px] transition-all ' +
                     (isActive
-                      ? theme.navActive
+                      ? theme.navActive + ' shadow-2xs'
                       : isLocked
                       ? 'border-transparent text-slate-400 hover:bg-slate-50'
-                      : 'border-transparent text-slate-800 hover:bg-slate-100')
+                      : 'border-transparent text-slate-700 hover:bg-slate-100/80 hover:text-slate-950')
                   }
                 >
-                  <span className="truncate">{l}</span>
-                  {isLocked && (
-                    <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-semibold" title="Terkunci hingga akun diverifikasi">
-                      🔒
-                    </span>
-                  )}
-                  {to === '/app/notifikasi' && unread > 0 && (
-                    <span className="badge border-cap bg-white text-cap">{unread}</span>
+                  {({ isActive }) => (
+                    <>
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span
+                          className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs shrink-0 transition-colors ${
+                            isActive ? theme.iconActive : theme.iconIdle
+                          }`}
+                        >
+                          {icon}
+                        </span>
+                        <span className="truncate">{l}</span>
+                      </span>
+                      {isLocked && (
+                        <span className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-semibold shrink-0" title="Terkunci hingga akun diverifikasi">
+                          🔒
+                        </span>
+                      )}
+                      {to === '/app/notifikasi' && unread > 0 && (
+                        <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center shrink-0">
+                          {unread}
+                        </span>
+                      )}
+                    </>
                   )}
                 </NavLink>
               </div>
@@ -1688,31 +1866,87 @@ function Layout() {
           })}
         </nav>
 
-        <div className="pb-safe flex-shrink-0 border-t border-slate-200 px-2 py-2">
+        <div className="pb-safe flex-shrink-0 border-t border-slate-200 bg-slate-50/70 px-2.5 py-2.5 space-y-1">
           <button
             type="button"
-            className="w-full rounded px-2 py-2 text-left text-sm font-bold text-slate-800 hover:bg-slate-100"
+            className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-bold text-slate-700 hover:bg-white hover:text-slate-950 transition-colors"
             onClick={() => {
               setModalGantiPw(true);
               setOpen(false);
             }}
           >
-            Ganti password
+            <span>🔑</span>
+            <span>Ganti Password</span>
           </button>
           <button
             type="button"
-            className="w-full rounded px-2 py-2 text-left text-sm font-bold text-rose-800 hover:bg-rose-50"
+            className="w-full flex items-center gap-2 rounded-lg px-2.5 py-2 text-left text-xs font-bold text-rose-700 hover:bg-rose-50 transition-colors"
             onClick={logout}
           >
-            Keluar
+            <span>🚪</span>
+            <span>Keluar dari Akun</span>
           </button>
         </div>
       </aside>
 
-      <main className={`h-screen min-h-0 w-full min-w-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 ${theme.mainBg}`}>
-        <div className="mx-auto w-full max-w-6xl space-y-5 pb-16">
-          {isPendingWarga && (
-            <div role="status" className="border border-amber-300 border-l-4 border-l-amber-700 bg-amber-50 p-4 text-sm text-amber-950">
+      {/* Area Konten Kanan + Top Header Bar */}
+      <div className={`flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden ${theme.mainBg}`}>
+        {/* Topbar Desktop/Tablet */}
+        <div className="hidden md:flex items-center justify-between gap-4 border-b border-slate-200/80 bg-white/90 backdrop-blur-xs px-6 lg:px-8 py-3 shadow-2xs flex-shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className={`w-9 h-9 rounded-xl flex items-center justify-center text-base shrink-0 ${theme.iconIdle} border border-slate-200/70`}>
+              {activeItem[2] || '📌'}
+            </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm lg:text-base font-bold text-slate-950 truncate">{activeItem[1]}</h2>
+                <span className={`inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold border ${theme.pill}`}>
+                  {ROLE_LABEL[user?.role] || user?.role}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 truncate">{namaDesaNav} · Portal Pelayanan Resmi</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 shrink-0">
+            {showQuickBtn && (
+              <Link
+                to={theme.quickTo}
+                className={`btn text-xs py-1.5 px-3 rounded-lg font-bold shadow-2xs transition-colors ${theme.quickBtn}`}
+              >
+                {theme.quickLabel}
+              </Link>
+            )}
+            <Link
+              to="/app/notifikasi"
+              className="relative inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+              title="Buka Notifikasi"
+            >
+              <span>🔔</span>
+              <span className="hidden lg:inline">Notifikasi</span>
+              {unread > 0 && (
+                <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
+                  {unread}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/app/profil"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50/80 pl-1 pr-3 py-1 hover:bg-white hover:border-slate-300 transition-colors"
+              title="Lihat Profil Akun"
+            >
+              <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold ${theme.avatarBg}`}>
+                {initials}
+              </span>
+              <span className="text-xs font-bold text-slate-800 max-w-[130px] truncate">{user?.nama}</span>
+            </Link>
+          </div>
+        </div>
+
+        <main className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto w-full max-w-6xl space-y-5 pb-16">
+            {isPendingWarga && (
+              <div role="status" className="rounded-xl border border-amber-300 border-l-4 border-l-amber-600 bg-amber-50 p-4 text-sm text-amber-950">
               <p className="font-bold">Akun Anda sedang diverifikasi petugas</p>
               <p className="mt-1 leading-relaxed">
                 Pendaftaran dengan NIK {user.nik_masked} sudah tercatat. Anda bisa mengajukan surat setelah petugas memeriksa data kependudukan Anda.
@@ -1734,7 +1968,8 @@ function Layout() {
 
           <Outlet />
         </div>
-      </main>
+        </main>
+      </div>
 
       {modalGantiPw && (
         <ModalGantiPassword
