@@ -58,6 +58,17 @@ const ROLE_THEME = {
     brandText: 'text-emerald-900',
     mainBg: 'bg-emerald-50/20',
     bar: 'bg-emerald-600',
+    logoBg: 'bg-emerald-700',
+  },
+  wargaPending: {
+    border: 'border-amber-600',
+    navActive: 'border-amber-600 bg-amber-50 font-bold text-amber-950',
+    pill: 'bg-amber-100 text-amber-900 border-amber-300',
+    profileBox: 'bg-amber-50/50',
+    brandText: 'text-amber-900',
+    mainBg: 'bg-amber-50/25',
+    bar: 'bg-amber-600',
+    logoBg: 'bg-amber-600',
   },
   petugas: {
     border: 'border-sky-700',
@@ -67,6 +78,7 @@ const ROLE_THEME = {
     brandText: 'text-sky-900',
     mainBg: 'bg-sky-50/20',
     bar: 'bg-sky-600',
+    logoBg: 'bg-sky-700',
   },
   lurah: {
     border: 'border-indigo-800',
@@ -76,6 +88,7 @@ const ROLE_THEME = {
     brandText: 'text-indigo-950',
     mainBg: 'bg-indigo-50/20',
     bar: 'bg-indigo-600',
+    logoBg: 'bg-indigo-700',
   },
   admin: {
     border: 'border-cyan-600',
@@ -85,6 +98,7 @@ const ROLE_THEME = {
     brandText: 'text-cyan-900',
     mainBg: 'bg-cyan-50/20',
     bar: 'bg-cyan-600',
+    logoBg: 'bg-cyan-700',
   },
 };
 
@@ -1681,11 +1695,12 @@ function Layout() {
   const [modalGantiPw, setModalGantiPw] = useState(false);
 
   const mustChangePw = user?.must_change_password;
-  const isPendingWarga = user?.role === 'warga' && user?.status_verifikasi === 'menunggu_verifikasi';
+  const isUnverifiedWarga = user?.role === 'warga' && user?.status_verifikasi !== 'terverifikasi';
+  const isPendingWarga = isUnverifiedWarga;
   const unread = (n || []).filter((x) => !x.dibaca).length;
   const items = [...(MENU[user?.role] || []), ['/app/notifikasi', 'Notifikasi']];
   const namaDesaNav = desa?.nama_desa || 'Pelayanan Kelurahan';
-  const theme = ROLE_THEME[user?.role] || ROLE_THEME.warga;
+  const theme = isUnverifiedWarga ? ROLE_THEME.wargaPending : (ROLE_THEME[user?.role] || ROLE_THEME.warga);
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-slate-100 md:flex-row">
@@ -1694,7 +1709,7 @@ function Layout() {
           {desa?.logo_url ? (
             <img src={desa.logo_url} alt="Logo" className="w-7 h-7 object-contain rounded-xs shrink-0" />
           ) : (
-            <div className="w-7 h-7 rounded-lg bg-brand-700 text-white font-serif font-bold text-sm flex items-center justify-center shadow-xs shrink-0">
+            <div className={`w-7 h-7 rounded-lg ${theme.logoBg} text-white font-serif font-bold text-sm flex items-center justify-center shadow-xs shrink-0`}>
               S
             </div>
           )}
@@ -1735,7 +1750,7 @@ function Layout() {
             {desa?.logo_url ? (
               <img src={desa.logo_url} alt="Logo" className="w-8 h-8 object-contain rounded-xs shrink-0" />
             ) : (
-              <div className="w-8 h-8 rounded-lg bg-brand-700 text-white font-serif font-bold text-base flex items-center justify-center shadow-xs shrink-0">
+              <div className={`w-8 h-8 rounded-lg ${theme.logoBg} text-white font-serif font-bold text-base flex items-center justify-center shadow-xs shrink-0`}>
                 S
               </div>
             )}
@@ -1986,6 +2001,8 @@ const Bars = ({ t, rows, barColor = 'bg-brand-700' }) => {
 };
 
 function BeritaWargaDashboard() {
+  const { user } = useAuth();
+  const isVerified = user?.status_verifikasi === 'terverifikasi';
   const [list] = useGet('/berita');
   const [baca, setBaca] = useState(null);
 
@@ -1994,6 +2011,19 @@ function BeritaWargaDashboard() {
     return <p className="text-sm text-slate-500 py-4 text-center">Belum ada pengumuman terbaru dari kelurahan.</p>;
   }
 
+  const badgeCls = isVerified
+    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+    : 'bg-amber-50 text-amber-800 border-amber-200';
+  const pillCls = isVerified
+    ? 'bg-emerald-100 text-emerald-800'
+    : 'bg-amber-100 text-amber-800';
+  const linkCls = isVerified
+    ? 'text-emerald-700 hover:text-emerald-900'
+    : 'text-amber-700 hover:text-amber-900';
+  const btnCls = isVerified
+    ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+    : 'bg-amber-600 hover:bg-amber-700 text-white';
+
   return (
     <div>
       {/* Modal Baca Pengumuman Lengkap */}
@@ -2001,7 +2031,7 @@ function BeritaWargaDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={() => setBaca(null)}>
           <div className="bg-white rounded-2xl shadow-xl border border-slate-200 p-6 max-w-lg w-full space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between border-b pb-3">
-              <span className="badge text-xs bg-blue-50 text-blue-800 border-blue-200 font-bold">
+              <span className={`badge text-xs font-bold ${badgeCls}`}>
                 {baca.kategori || 'Pengumuman'}
               </span>
               <span className="text-xs text-slate-400">
@@ -2013,7 +2043,7 @@ function BeritaWargaDashboard() {
               <p className="mt-3 text-sm text-slate-700 leading-relaxed whitespace-pre-line">{baca.isi}</p>
             </div>
             <div className="pt-3 border-t text-right">
-              <button type="button" onClick={() => setBaca(null)} className="btn btn-p text-xs py-1.5 px-4 font-bold">
+              <button type="button" onClick={() => setBaca(null)} className={`btn text-xs py-1.5 px-4 font-bold ${btnCls}`}>
                 Tutup
               </button>
             </div>
@@ -2026,7 +2056,7 @@ function BeritaWargaDashboard() {
           <div key={b.id} className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex flex-col justify-between hover:shadow-xs transition-shadow">
             <div>
               <div className="flex items-center justify-between gap-1 mb-1.5">
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pillCls}`}>
                   {b.kategori || 'Pengumuman'}
                 </span>
                 <span className="text-[11px] text-slate-400">
@@ -2039,7 +2069,7 @@ function BeritaWargaDashboard() {
             <button
               type="button"
               onClick={() => setBaca(b)}
-              className="mt-2 text-[11px] font-bold text-brand-700 hover:text-brand-900 text-left"
+              className={`mt-2 text-[11px] font-bold text-left ${linkCls}`}
             >
               Baca selengkapnya →
             </button>
@@ -2095,7 +2125,7 @@ function VerifikasiDiperlukanGate({ user, title = 'Layanan Pengajuan Surat Terku
             <span>Periksa kembali kesesuaian NIK, alamat, atau nomor WhatsApp Anda agar proses verifikasi petugas lebih cepat, atau baca pengumuman kelurahan terbaru.</span>
           </div>
           <div className="flex flex-wrap gap-2 flex-shrink-0">
-            <Link to="/app/profil" className="btn btn-p text-xs py-2 px-3.5 font-bold">
+            <Link to="/app/profil" className="btn bg-amber-600 hover:bg-amber-700 text-white text-xs py-2 px-3.5 font-bold">
               Periksa Profil Kependudukan
             </Link>
             <Link to="/app/berita" className="btn btn-o text-xs py-2 px-3.5 font-semibold">
@@ -2670,27 +2700,35 @@ function DashboardWarga({ user, s, dateStr }) {
   const isVerified = user?.status_verifikasi === 'terverifikasi';
 
   const metrics = [
-    { label: 'Semua pengajuan', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0) + (st.approved || 0) + (st.issued || 0), desc: 'Seluruh berkas yang masuk', icon: '🗂️', top: 'border-t-emerald-500', pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
-    { label: 'Sedang diproses', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0), desc: 'Diperiksa atau menunggu lurah', icon: '⏳', top: 'border-t-sky-500', pill: 'bg-sky-50 text-sky-700 border-sky-200' },
-    { label: 'Surat terbit', value: st.issued || 0, desc: 'Sudah disahkan dan bisa diunduh', icon: '📜', top: 'border-t-teal-600', pill: 'bg-teal-50 text-teal-700 border-teal-200' },
+    { label: 'Semua pengajuan', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0) + (st.approved || 0) + (st.issued || 0), desc: 'Seluruh berkas yang masuk', icon: '🗂️', top: 'border-t-emerald-600', pill: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+    { label: 'Sedang diproses', value: (st.submitted || 0) + (st.under_review || 0) + (st.pending_approval || 0), desc: 'Diperiksa atau menunggu lurah', icon: '⏳', top: 'border-t-lime-600', pill: 'bg-lime-50 text-lime-700 border-lime-200' },
+    { label: 'Surat terbit', value: st.issued || 0, desc: 'Sudah disahkan dan bisa diunduh', icon: '📜', top: 'border-t-green-600', pill: 'bg-green-50 text-green-700 border-green-200' },
     { label: 'Perlu perbaikan', value: (st.revision_required || 0) + (st.rejected || 0), desc: 'Direvisi atau ditolak', icon: '✏️', top: 'border-t-amber-500', pill: 'bg-amber-50 text-amber-700 border-amber-200' },
   ];
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-5 sm:p-6 shadow-sm">
+      <div className={`rounded-2xl border p-5 sm:p-6 shadow-sm ${
+        isVerified
+          ? 'border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-green-50'
+          : 'border-amber-200 bg-gradient-to-br from-white via-amber-50 to-orange-50'
+      }`}>
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-emerald-700">
-              ● Portal Warga · {dateStr}
+            <span className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold tracking-wide ${
+              isVerified
+                ? 'bg-emerald-100 border-emerald-300 text-emerald-800'
+                : 'bg-amber-100 border-amber-300 text-amber-800'
+            }`}>
+              {isVerified ? `● Portal Warga Terverifikasi · ${dateStr}` : `● Menunggu Verifikasi Akun · ${dateStr}`}
             </span>
-            <h1 className="mt-2 font-serif text-2xl font-bold text-emerald-950 sm:text-3xl">
+            <h1 className={`mt-2 font-serif text-2xl font-bold sm:text-3xl ${isVerified ? 'text-emerald-950' : 'text-amber-950'}`}>
               {user.nama}
             </h1>
             <p className="mt-1 text-sm text-slate-600">
               {isVerified
                 ? 'Akun kependudukan terverifikasi. Ajukan surat resmi kelurahan kapan saja secara daring.'
-                : 'Status aktivasi akun kependudukan dan pengumuman terbaru Kelurahan Suka Maju.'}
+                : 'Akun belum terverifikasi. Lengkapi profil dan tunggu validasi petugas untuk membuka layanan surat.'}
             </p>
           </div>
           {isVerified && (
@@ -2731,7 +2769,7 @@ function DashboardWarga({ user, s, dateStr }) {
         title="Pengumuman & Berita Kelurahan Terkini"
         subtitle="Informasi penting, agenda dinas, dan pengumuman resmi kelurahan"
         rightAction={
-          <Link to="/app/berita" className="text-xs font-bold text-brand-700 hover:underline">
+          <Link to="/app/berita" className={`text-xs font-bold hover:underline ${isVerified ? 'text-emerald-700' : 'text-amber-700'}`}>
             Lihat semua pengumuman →
           </Link>
         }
@@ -2744,7 +2782,7 @@ function DashboardWarga({ user, s, dateStr }) {
           title="Surat saya yang sudah terbit"
           subtitle="Siap diunduh dan dicetak"
           rightAction={
-            <Link to="/app/surat" className="text-xs font-bold text-brand-700 hover:underline">
+            <Link to="/app/surat" className="text-xs font-bold text-emerald-700 hover:underline">
               Lihat semua surat
             </Link>
           }
