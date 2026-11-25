@@ -2308,28 +2308,28 @@ function DashboardLurah({ user, s, dateStr }) {
   return (
     <div className="space-y-5">
       {/* Banner Pimpinan Lurah */}
-      <div className="rounded-2xl border border-brand-800 bg-gradient-to-br from-brand-950 via-brand-900 to-indigo-950 text-white p-5 sm:p-6 shadow-md">
+      <div className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50 to-sky-50 p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-amber-300 mb-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-indigo-500 mb-1">
               MEJA PIMPINAN • KELURAHAN SUKA MAJU MEDAN JOHOR
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
-            <p className="mt-1 text-xs sm:text-sm text-brand-100">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-indigo-950">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-600">
               {user.jabatan || 'Lurah Suka Maju'} {user.nip ? `• NIP. ${user.nip}` : ''} • {dateStr}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {s.has_signature ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 px-3.5 py-1.5 text-xs font-bold text-emerald-200">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-3.5 py-1.5 text-xs font-bold text-emerald-700">
                 ✓ Spesimen TTE Digital Siap
               </span>
             ) : (
-              <Link to="/app/profil" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 text-xs font-bold transition-colors">
+              <Link to="/app/profil" className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-white px-3.5 py-2 text-xs font-bold transition-colors">
                 ⚠️ Atur Tanda Tangan Lurah
               </Link>
             )}
-            <Link to="/app/surat-keluar" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-bold transition-colors">
+            <Link to="/app/surat-keluar" className="rounded-lg border border-indigo-300 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 text-xs font-bold transition-colors">
               + Terbitkan Surat Dinas
             </Link>
           </div>
@@ -2482,22 +2482,22 @@ function DashboardPetugas({ user, s, dateStr }) {
   return (
     <div className="space-y-5">
       {/* Banner Meja Pelayanan Petugas */}
-      <div className="rounded-2xl border border-sky-800 bg-gradient-to-br from-brand-900 via-sky-900 to-slate-900 text-white p-5 sm:p-6 shadow-md">
+      <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-white via-sky-50 to-cyan-50 p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="text-[11px] font-bold uppercase tracking-wider text-sky-300 mb-1">
+            <div className="text-[11px] font-bold uppercase tracking-wider text-sky-500 mb-1">
               MEJA PELAYANAN &amp; TATA USAHA • KELURAHAN SUKA MAJU
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight">{user.nama}</h1>
-            <p className="mt-1 text-xs sm:text-sm text-sky-100">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight text-sky-950">{user.nama}</h1>
+            <p className="mt-1 text-xs sm:text-sm text-slate-600">
               {user.jabatan || 'Petugas Pelayanan Administrasi'} {user.nip ? `• NIP. ${user.nip}` : ''} • {dateStr}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link to="/app/verifikasi-warga" className="rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 px-3.5 py-2 text-xs font-bold transition-colors">
+            <Link to="/app/verifikasi-warga" className="rounded-lg bg-amber-500 hover:bg-amber-400 text-white px-3.5 py-2 text-xs font-bold transition-colors">
               Cek Verifikasi Warga ({s.warga_pending || 0})
             </Link>
-            <Link to="/app/surat-masuk" className="rounded-lg border border-white/25 bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 text-xs font-bold transition-colors">
+            <Link to="/app/surat-masuk" className="rounded-lg border border-sky-300 bg-sky-600 hover:bg-sky-700 text-white px-3.5 py-2 text-xs font-bold transition-colors">
               + Catat Surat Masuk
             </Link>
           </div>
@@ -2669,23 +2669,23 @@ function DashboardWarga({ user, s, dateStr }) {
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-emerald-900/15 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-5 sm:p-6 shadow-md">
+      <div className="rounded-2xl border border-emerald-200 bg-gradient-to-br from-white via-emerald-50 to-teal-50 p-5 sm:p-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
           <div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 border border-white/20 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-emerald-50">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 border border-emerald-300 px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-emerald-700">
               ● Portal Warga · {dateStr}
             </span>
-            <h1 className="mt-2 font-serif text-2xl font-bold text-white sm:text-3xl">
+            <h1 className="mt-2 font-serif text-2xl font-bold text-emerald-950 sm:text-3xl">
               {user.nama}
             </h1>
-            <p className="mt-1 text-sm text-emerald-100/90">
+            <p className="mt-1 text-sm text-slate-600">
               {isVerified
                 ? 'Akun kependudukan terverifikasi. Ajukan surat resmi kelurahan kapan saja secara daring.'
                 : 'Status aktivasi akun kependudukan dan pengumuman terbaru Kelurahan Suka Maju.'}
             </p>
           </div>
           {isVerified && (
-            <Link to="/app/ajukan" className="btn bg-white text-emerald-950 hover:bg-emerald-50 border border-white/60 text-xs py-2.5 px-4 font-bold self-start sm:self-auto shadow-xs">
+            <Link to="/app/ajukan" className="btn bg-emerald-600 text-white hover:bg-emerald-700 border border-emerald-700 text-xs py-2.5 px-4 font-bold self-start sm:self-auto shadow-xs">
               + Ajukan Surat Baru
             </Link>
           )}
