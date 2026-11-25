@@ -2358,7 +2358,9 @@ app.get(
     const s = sk[0];
 
     const fullPath = s.file_path ? path.resolve(s.file_path) : null;
-    if (req.query.refresh || req.query.regenerate || !fullPath || !fs.existsSync(fullPath)) {
+    const [profilNow] = await q('SELECT updated_at FROM profil_desa ORDER BY id ASC LIMIT 1');
+    const pdfOutdated = profilNow?.updated_at && fullPath && fs.existsSync(fullPath) && new Date(profilNow.updated_at).getTime() > fs.statSync(fullPath).mtimeMs;
+    if (req.query.refresh || req.query.regenerate || !fullPath || !fs.existsSync(fullPath) || pdfOutdated) {
       // Buat ulang jika file belum ada atau diminta refresh
       const storageDir = path.join(DATA_DIR, 'storage', 'surat_keluar');
       fs.mkdirSync(storageDir, { recursive: true });

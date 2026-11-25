@@ -3686,10 +3686,22 @@ function Detail() {
             {/* LEMBAR SIMULASI SURAT RESMI KELURAHAN */}
             <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg border border-slate-300 font-serif text-slate-900 text-xs sm:text-sm leading-relaxed">
               {/* KOP SURAT */}
-              <div className="text-center border-b-2 border-slate-900 pb-3 mb-4">
-                <div className="text-xs font-bold">Pemerintah Kota Medan</div>
-                <div className="text-sm sm:text-base font-bold tracking-tight">Kecamatan Medan Johor • Kelurahan Suka Maju</div>
-                <div className="text-[10px] text-slate-600 font-sans mt-0.5">Jl. STM No. 40 • Telp: 0823-4123-5734 • Kode Pos: 20146</div>
+              <div className="border-b-[3px] border-double border-slate-900 pb-3 mb-4">
+                <div className="flex items-center gap-4">
+                  {d.kop?.logo_url && (
+                    <div className="w-16 h-16 flex-shrink-0 flex items-center justify-center">
+                      <img src={d.kop.logo_url} alt="Logo Kelurahan" className="max-h-16 max-w-16 object-contain" />
+                    </div>
+                  )}
+                  <div className={`flex-1 text-center ${!d.kop?.logo_url ? 'w-full' : ''}`}>
+                    <div className="text-xs font-bold uppercase tracking-wider">{d.kop?.kabupaten_kota || 'Pemerintah Kota Medan'}</div>
+                    <div className="text-sm sm:text-base font-extrabold uppercase tracking-tight">{d.kop?.nama_desa || 'Kelurahan Suka Maju'}</div>
+                    <div className="text-xs font-bold uppercase tracking-wider">{d.kop?.kecamatan || 'Kecamatan Medan Johor'}</div>
+                    <div className="text-[10px] text-slate-600 font-sans mt-0.5">
+                      {d.kop?.alamat || 'Jl. STM No. 40, Kelurahan Suka Maju'} • Telp: {d.kop?.telepon || '0823-4123-5734'} • Kode Pos: {d.kop?.kode_pos || '20146'}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* JUDUL */}
