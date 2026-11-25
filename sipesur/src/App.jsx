@@ -1138,76 +1138,93 @@ function Login() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50/40 to-sky-50/40 flex flex-col justify-center p-4 py-8 sm:p-6">
-      <div className="mx-auto w-full max-w-4xl">
-        <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg md:grid-cols-12">
-          {/* Panel Kiri: Identitas Portal & Info Peran (Hijau) */}
-          <div className="md:col-span-5 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-6 sm:p-7 flex flex-col justify-between gap-6">
+    <div className="min-h-screen bg-[#f0f4f8] flex flex-col justify-center p-4 py-8 sm:p-6">
+      {/* Pita Pemerintah - sama seperti website */}
+      <div className="fixed top-0 left-0 right-0 bg-[#1a3a5c] text-white text-xs py-1.5 px-4 z-10">
+        <div className="mx-auto max-w-6xl flex items-center justify-between gap-2">
+          <span className="opacity-80 hidden sm:block">🏛️ Portal Resmi Pemerintah — {kecamatan}</span>
+          <span className="opacity-80">Layanan Online 24 Jam • Verifikasi QR Aktif</span>
+        </div>
+      </div>
+
+      <div className="mx-auto w-full max-w-4xl pt-6">
+        <div className="grid overflow-hidden rounded-2xl shadow-xl md:grid-cols-12">
+          {/* Panel Kiri: Navy + Emas — selaras dengan hero website */}
+          <div className="md:col-span-5 bg-gradient-to-br from-[#1a3a5c] via-[#1e4876] to-[#0f2340] text-white p-6 sm:p-8 flex flex-col justify-between gap-6">
             <div>
               <Link to="/" className="inline-flex items-center gap-3">
                 {desa?.logo_url ? (
-                  <img src={desa.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-white/95 p-1 shadow-xs" />
+                  <img src={desa.logo_url} alt="Logo" className="w-11 h-11 object-contain rounded-lg bg-white/95 p-1 shadow-sm" />
                 ) : (
-                  <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-white font-serif font-bold text-lg flex items-center justify-center shadow-xs">
-                    S
+                  <div className="w-11 h-11 rounded-xl bg-[#c8a84b]/20 border border-[#c8a84b]/40 text-[#c8a84b] font-serif font-bold text-xl flex items-center justify-center">
+                    🏛
                   </div>
                 )}
                 <div>
-                  <div className="font-serif text-xl font-bold leading-none tracking-tight text-white">SIPESUR</div>
-                  <div className="mt-1 text-xs text-emerald-100/90 font-medium">{namaDesa}</div>
+                  <div className="font-bold text-white text-base leading-tight">{namaDesa}</div>
+                  <div className="mt-0.5 text-xs text-white/60 font-medium">{kecamatan}</div>
                 </div>
               </Link>
 
-              <h2 className="mt-6 font-serif text-2xl font-bold leading-snug text-white">
-                Portal Layanan Surat &amp; Administrasi Terpadu
+              <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3 py-1 text-[11px] font-semibold text-white/80">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#c8a84b] animate-pulse"></span>
+                SIPESUR · Sistem Informasi Pelayanan Surat
+              </div>
+
+              <h2 className="mt-4 font-serif text-xl sm:text-2xl font-bold leading-snug text-white">
+                Portal Layanan Administrasi<br />
+                <span className="text-[#c8a84b]">Kependudukan Digital</span>
               </h2>
-              <p className="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
-                Sistem pelayanan digital resmi {namaDesa}, {kecamatan}. Masuk sesuai peran Anda untuk mengakses layanan kependudukan dan tata usaha.
+              <p className="mt-3 text-xs sm:text-sm text-white/70 leading-relaxed">
+                Urus surat keterangan resmi dari rumah. Ajukan online, petugas verifikasi, Lurah sahkan dengan tanda tangan digital.
               </p>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
-                Akses Multi-Peran Terintegrasi
+            <div className="space-y-2">
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#c8a84b] mb-2">
+                Akses Multi-Peran
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🏠</span>
-                  <span className="truncate font-medium">Warga · Pengajuan &amp; Unduh Surat</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🪪</span>
-                  <span className="truncate font-medium">Petugas · Verifikasi &amp; Tata Usaha</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🏛️</span>
-                  <span className="truncate font-medium">Lurah · ACC, TTE &amp; Disposisi</span>
-                </div>
-                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
-                  <span>🖥️</span>
-                  <span className="truncate font-medium">Admin IT · Sistem &amp; Template</span>
-                </div>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-1.5 text-xs">
+                {[
+                  ['🏠', 'Warga', 'Ajukan & unduh surat'],
+                  ['🪪', 'Petugas', 'Verifikasi & tata usaha'],
+                  ['🏛️', 'Lurah', 'ACC, TTE & disposisi'],
+                  ['🖥️', 'Admin IT', 'Sistem & konfigurasi'],
+                ].map(([icon, peran, desc]) => (
+                  <div key={peran} className="rounded-lg bg-white/8 border border-white/12 px-3 py-2 flex items-center gap-2.5">
+                    <span className="text-sm">{icon}</span>
+                    <div>
+                      <div className="font-bold text-white/95 leading-none">{peran}</div>
+                      <div className="text-[11px] text-white/55 mt-0.5">{desc}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+
+            <Link to="/" className="text-xs text-white/50 hover:text-white/80 transition-colors">
+              ← Kembali ke Beranda
+            </Link>
           </div>
 
-          {/* Panel Kanan: Form Masuk Akun */}
-          <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-center">
-            <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
-                🔐 Autentikasi Akun
-              </span>
-              <h1 className="mt-2.5 font-serif text-2xl font-bold text-slate-950">Masuk ke Akun Anda</h1>
-              <p className="mt-1 text-xs sm:text-sm text-slate-600">
-                Warga menggunakan <strong>NIK / email</strong>. Petugas, Lurah, dan Admin IT menggunakan <strong>NIP / username</strong>.
+          {/* Panel Kanan: Form Masuk — putih bersih */}
+          <div className="md:col-span-7 bg-white p-6 sm:p-8 flex flex-col justify-center">
+            {/* Header form dengan aksen emas */}
+            <div className="border-b-4 border-[#c8a84b] pb-4 mb-5">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-[#1a3a5c]/60 mb-1">
+                Portal Resmi · {namaDesa}
+              </div>
+              <h1 className="font-serif text-2xl font-bold text-[#1a3a5c]">Masuk ke Akun Anda</h1>
+              <p className="mt-1 text-xs text-slate-500">
+                Warga: NIK atau email &nbsp;|&nbsp; Petugas/Lurah/Admin: NIP atau username
               </p>
             </div>
 
-            <form onSubmit={go} className="mt-5 space-y-1">
+            <form onSubmit={go} className="space-y-3">
               <Field l="NIK, NIP, Username, atau Email" req>
                 <input
-                  className="inp rounded-lg"
-                  placeholder="Contoh: 3201010101900001, petugas, lurah, atau admin"
+                  className="inp rounded-lg border-slate-300 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/20"
+                  placeholder="3201010101900001 / petugas / lurah / admin"
                   required
                   autoFocus
                   autoComplete="username"
@@ -1218,7 +1235,7 @@ function Login() {
               <Field l="Password" req>
                 <div className="relative">
                   <input
-                    className="inp rounded-lg pr-24"
+                    className="inp rounded-lg pr-24 border-slate-300 focus:border-[#1a3a5c] focus:ring-[#1a3a5c]/20"
                     type={showPw ? 'text' : 'password'}
                     placeholder="Masukkan password akun"
                     required
@@ -1229,7 +1246,7 @@ function Login() {
                   <button
                     type="button"
                     aria-pressed={showPw}
-                    className="absolute inset-y-0 right-0 px-3 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900"
+                    className="absolute inset-y-0 right-0 px-3 text-xs font-bold text-[#1a3a5c] hover:text-[#0f2340]"
                     onClick={() => setShowPw(!showPw)}
                   >
                     {showPw ? 'Sembunyikan' : 'Tampilkan'}
@@ -1240,17 +1257,17 @@ function Login() {
               <Msg m={m} />
 
               <button
-                className="btn w-full rounded-lg bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white py-2.5 font-bold shadow-sm transition-all"
+                className="btn w-full rounded-lg bg-[#1a3a5c] hover:bg-[#122a45] text-white py-2.5 font-bold shadow-sm transition-all"
                 disabled={loading}
               >
                 {loading ? 'Memeriksa kredensial…' : 'Masuk Sekarang →'}
               </button>
             </form>
 
-            {/* Isi Cepat Akun Demo */}
-            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
+            {/* Isi Cepat Demo */}
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
               <div className="flex flex-wrap items-center justify-between gap-1 mb-2.5">
-                <span className="text-xs font-bold text-slate-800">⚡ Isi Cepat Akun Uji Coba</span>
+                <span className="text-xs font-bold text-slate-700">⚡ Isi Cepat — Akun Demo</span>
                 <span className="text-[11px] text-slate-500">Password: <code className="font-mono font-bold text-slate-700">Password123</code></span>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -1258,31 +1275,23 @@ function Login() {
                   <button
                     key={acc.id}
                     type="button"
-                    onClick={() => {
-                      setF({ identifier: acc.id, password: 'Password123' });
-                      setM(null);
-                    }}
+                    onClick={() => { setF({ identifier: acc.id, password: 'Password123' }); setM(null); }}
                     className={`rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-colors ${acc.cls}`}
                   >
                     <div className="flex items-center gap-1.5">
                       <span>{acc.icon}</span>
                       <span>{acc.label}</span>
                     </div>
-                    <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-80">{acc.id}</div>
+                    <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-70">{acc.id}</div>
                   </button>
                 ))}
               </div>
             </div>
 
-            <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs sm:text-sm text-slate-600 pt-3 border-t border-slate-100">
-              <span>
-                Belum punya akun warga?{' '}
-                <Link className="font-bold text-emerald-700 underline underline-offset-2 hover:text-emerald-900" to="/register">
-                  Daftar Warga Baru
-                </Link>
-              </span>
-              <Link to="/" className="font-semibold text-slate-600 hover:text-slate-900">
-                ← Kembali ke Beranda
+            <div className="mt-4 text-center text-xs text-slate-500 pt-3 border-t border-slate-100">
+              Belum punya akun?{' '}
+              <Link className="font-bold text-[#1a3a5c] underline underline-offset-2 hover:text-[#0f2340]" to="/register">
+                Daftar Warga Baru
               </Link>
             </div>
           </div>
