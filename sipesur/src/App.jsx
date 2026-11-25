@@ -1321,6 +1321,9 @@ function Login() {
  */
 function Register() {
   const nav = useNavigate();
+  const [desa] = useGet('/profil-desa');
+  const namaDesa = desa?.nama_desa || 'Kelurahan Suka Maju';
+  const kecamatan = desa?.kecamatan || 'Kecamatan Medan Johor';
   const [f, setF] = useState({
     nik: '',
     no_kk: '',
@@ -1379,270 +1382,336 @@ function Register() {
 
   if (successData) {
     return (
-      <Center title="Pendaftaran Berhasil" subtitle="Akun Anda telah tersimpan di sistem SIPESUR" maxWidth="max-w-lg">
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 text-sm text-emerald-950">
-          <div className="flex items-center gap-2 font-bold text-emerald-800 text-base">
-            Pendaftaran berhasil
-          </div>
-          <p className="mt-2 text-slate-700 leading-relaxed">
-            Akun Anda dengan NIK <b>{successData.nik_masked}</b> atas nama <b>{f.nama}</b> telah berhasil didaftarkan.
-          </p>
-          <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed">
-            <b>⏳ Status: Menunggu Verifikasi Petugas</b>
-            <p className="mt-1">
-              Sesuai SOP pelayanan publik, data kependudukan Anda akan diperiksa secara manual oleh petugas Kelurahan Suka Maju untuk mencocokkan data NIK dan Kartu Keluarga sebelum Anda dapat mengajukan permohonan surat resmi.
-            </p>
+      <div className="min-h-screen bg-[#f0f4f8] flex flex-col justify-center p-4 py-10 sm:p-6">
+        <div className="fixed top-0 left-0 right-0 bg-[#1a3a5c] text-white text-xs py-1.5 px-4 z-10">
+          <div className="mx-auto max-w-6xl flex items-center justify-between gap-2">
+            <span className="opacity-80 hidden sm:block">🏛️ Portal Resmi Pemerintah — {kecamatan}</span>
+            <span className="opacity-80">Layanan Online 24 Jam • Verifikasi QR Aktif</span>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-col gap-2">
-          <button className="btn btn-p w-full py-2.5 font-bold shadow" onClick={() => nav('/login')}>
-            Lanjut ke Halaman Login →
-          </button>
-          <Link to="/" className="text-center text-xs text-slate-500 hover:text-navy">
-            Kembali ke Beranda
-          </Link>
+        <div className="mx-auto w-full max-w-lg pt-6">
+          <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+            <div className="bg-gradient-to-r from-[#1a3a5c] via-[#1e4876] to-[#0f2340] px-6 py-5 text-white border-b-4 border-[#c8a84b]">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-[#c8a84b]">
+                SIPESUR · {namaDesa}
+              </div>
+              <h1 className="mt-1 font-serif text-2xl font-bold">Pendaftaran Berhasil</h1>
+              <p className="mt-0.5 text-xs text-white/75">Akun Anda telah tersimpan di sistem SIPESUR</p>
+            </div>
+
+            <div className="p-6">
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-5 text-sm text-emerald-950">
+                <div className="flex items-center gap-2 font-bold text-emerald-800 text-base">
+                  ✓ Pendaftaran berhasil
+                </div>
+                <p className="mt-2 text-slate-700 leading-relaxed">
+                  Akun Anda dengan NIK <b>{successData.nik_masked}</b> atas nama <b>{f.nama}</b> telah berhasil didaftarkan.
+                </p>
+                <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900 leading-relaxed">
+                  <b>⏳ Status: Menunggu Verifikasi Petugas</b>
+                  <p className="mt-1">
+                    Sesuai SOP pelayanan publik, data kependudukan Anda akan diperiksa secara manual oleh petugas {namaDesa} untuk mencocokkan data NIK dan Kartu Keluarga sebelum Anda dapat mengajukan permohonan surat resmi.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-col gap-2">
+                <button
+                  className="btn w-full rounded-lg bg-[#1a3a5c] hover:bg-[#122a45] text-white py-2.5 font-bold shadow-sm transition-colors"
+                  onClick={() => nav('/login')}
+                >
+                  Lanjut ke Halaman Login →
+                </button>
+                <Link to="/" className="text-center text-xs font-semibold text-slate-500 hover:text-[#1a3a5c] pt-1">
+                  ← Kembali ke Beranda
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
-      </Center>
+      </div>
     );
   }
 
   return (
-    <Center
-      title="Pendaftaran Akun Warga"
-      subtitle="Silakan isi data kependudukan Anda dengan benar. Data akan diverifikasi oleh petugas kelurahan sebelum layanan surat dapat diakses."
-      maxWidth="max-w-2xl"
-    >
-      <form onSubmit={go} className="space-y-4">
-        {/* BAGIAN 1: IDENTITAS KEPENDUDUKAN RESMI */}
-        <div className="rounded-lg border border-blue-100 bg-blue-50/20 p-4">
-          <h2 className="mb-3 text-xs font-bold text-brand-700">
-            1. Identitas Kependudukan Resmi
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field
-              l="Nomor Induk Kependudukan (NIK)"
-              req
-              hint={f.nik && (nikValid ? '✓ 16 digit valid' : 'Harus tepat 16 digit angka')}
-              err={f.nik && !nikValid && !/^\d*$/.test(f.nik) ? 'Hanya boleh berisi angka' : null}
-            >
-              <input
-                className={'inp ' + (f.nik ? (nikValid ? 'border-emerald-500' : 'border-red-400') : '')}
-                required
-                maxLength={16}
-                pattern="\d{16}"
-                placeholder="Contoh: 3201010101900001"
-                value={f.nik}
-                onChange={set('nik')}
-              />
-            </Field>
-
-            <Field
-              l="Nomor Kartu Keluarga (KK)"
-              req
-              hint={f.no_kk && (kkValid ? '✓ 16 digit valid' : 'Harus tepat 16 digit angka')}
-              err={f.no_kk && !kkValid && !/^\d*$/.test(f.no_kk) ? 'Hanya boleh berisi angka' : null}
-            >
-              <input
-                className={'inp ' + (f.no_kk ? (kkValid ? 'border-emerald-500' : 'border-red-400') : '')}
-                required
-                maxLength={16}
-                pattern="\d{16}"
-                placeholder="Contoh: 3201010101900002"
-                value={f.no_kk}
-                onChange={set('no_kk')}
-              />
-            </Field>
-          </div>
-
-          <Field l="Nama Lengkap (Sesuai KTP/KK)" req>
-            <input
-              className="inp"
-              required
-              minLength={3}
-              placeholder="Contoh: Budi Santoso"
-              value={f.nama}
-              onChange={set('nama')}
-            />
-          </Field>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field l="Tempat Lahir" req>
-              <input
-                className="inp"
-                required
-                placeholder="Contoh: Medan"
-                value={f.tempat_lahir}
-                onChange={set('tempat_lahir')}
-              />
-            </Field>
-            <Field l="Tanggal Lahir" req>
-              <input
-                className="inp"
-                type="date"
-                required
-                value={f.tanggal_lahir}
-                onChange={set('tanggal_lahir')}
-              />
-            </Field>
-            <Field l="Jenis Kelamin" req>
-              <select className="inp" required value={f.jenis_kelamin} onChange={set('jenis_kelamin')}>
-                <option value="">Pilih</option>
-                <option value="L">Laki-laki</option>
-                <option value="P">Perempuan</option>
-              </select>
-            </Field>
-          </div>
+    <div className="min-h-screen bg-[#f0f4f8] py-10 px-4 sm:px-6">
+      {/* Pita Pemerintah - sama seperti website & login */}
+      <div className="fixed top-0 left-0 right-0 bg-[#1a3a5c] text-white text-xs py-1.5 px-4 z-10">
+        <div className="mx-auto max-w-6xl flex items-center justify-between gap-2">
+          <span className="opacity-80 hidden sm:block">🏛️ Portal Resmi Pemerintah — {kecamatan}</span>
+          <span className="opacity-80">Layanan Online 24 Jam • Verifikasi QR Aktif</span>
         </div>
+      </div>
 
-        {/* BAGIAN 2: ALAMAT & KONTAK */}
-        <div className="rounded-lg border border-blue-100 bg-blue-50/20 p-4">
-          <h2 className="mb-3 text-xs font-bold text-brand-700">
-            2. Alamat & Kontak Aktif
-          </h2>
-          <Field l="Alamat Lengkap (Jalan, RT/RW, Kelurahan)" req>
-            <textarea
-              className="inp"
-              rows={2}
-              required
-              minLength={5}
-              placeholder="Contoh: Jl. STM No. 15 RT 02/RW 03, Kelurahan Suka Maju"
-              value={f.alamat}
-              onChange={set('alamat')}
-            />
-          </Field>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Field l="Pekerjaan">
-              <input
-                className="inp"
-                placeholder="Contoh: Karyawan Swasta"
-                value={f.pekerjaan}
-                onChange={set('pekerjaan')}
-              />
-            </Field>
-            <Field l="Nomor HP / WhatsApp" req hint={f.telepon && (telpValid ? '✓ Nomor aktif' : 'Minimal 9 digit')}>
-              <input
-                className="inp"
-                type="tel"
-                required
-                placeholder="Contoh: 081234567890"
-                value={f.telepon}
-                onChange={set('telepon')}
-              />
-            </Field>
-            <Field l="Email (Opsional)" hint="Untuk notifikasi status">
-              <input
-                className="inp"
-                type="email"
-                placeholder="warga@email.com"
-                value={f.email}
-                onChange={set('email')}
-              />
-            </Field>
-          </div>
-        </div>
-
-        {/* BAGIAN 3: KEAMANAN AKUN */}
-        <div className="rounded-lg border border-blue-100 bg-blue-50/20 p-4">
-          <h2 className="mb-3 text-xs font-bold text-brand-700">
-            3. Keamanan Akun
-          </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field l="Password" req>
-              <div className="relative">
-                <input
-                  className={'inp pr-24 ' + (f.password ? (pwValid ? 'border-emerald-500' : 'border-amber-400') : '')}
-                  type={showPw ? 'text' : 'password'}
-                  required
-                  minLength={8}
-                  placeholder="Min. 8 karakter (huruf & angka)"
-                  value={f.password}
-                  onChange={set('password')}
-                />
-                <button
-                  type="button"
-                  className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-brand-600"
-                  onClick={() => setShowPw(!showPw)}
-                >
-                  {showPw ? 'Sembunyikan' : 'Tampilkan'}
-                </button>
-              </div>
-
-              {/* Password Strength Indicator */}
-              {f.password && (
-                <div className="mt-2 space-y-1">
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-slate-500">Kekuatan Password:</span>
-                    <span className={'font-bold ' + pwStrength.text}>{pwStrength.label}</span>
+      <div className="mx-auto w-full max-w-3xl pt-5">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
+          {/* Header Navy + Emas selaras dengan hero website */}
+          <div className="bg-gradient-to-br from-[#1a3a5c] via-[#1e4876] to-[#0f2340] text-white px-6 py-6 sm:px-8 border-b-4 border-[#c8a84b]">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {desa?.logo_url ? (
+                  <img src={desa.logo_url} alt="Logo" className="w-11 h-11 object-contain rounded-lg bg-white/95 p-1 shadow-sm shrink-0" />
+                ) : (
+                  <div className="w-11 h-11 rounded-xl bg-[#c8a84b]/20 border border-[#c8a84b]/40 text-[#c8a84b] font-serif font-bold text-xl flex items-center justify-center shrink-0">
+                    🏛
                   </div>
-                  <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
-                    <div
-                      className={'h-full transition-all duration-300 ' + pwStrength.color}
-                      style={{ width: pwStrength.width }}
-                    />
+                )}
+                <div>
+                  <div className="text-[11px] font-bold uppercase tracking-widest text-[#c8a84b]">
+                    SIPESUR · {namaDesa}
                   </div>
+                  <h1 className="font-serif text-xl sm:text-2xl font-bold leading-tight">
+                    Pendaftaran Akun Warga
+                  </h1>
                 </div>
-              )}
-            </Field>
-
-            <Field
-              l="Konfirmasi Password"
-              req
-              hint={f.konfirmasi_password && (kpwMatch ? '✓ Password cocok' : 'Password belum cocok')}
-            >
-              <div className="relative">
-                <input
-                  className={'inp pr-24 ' + (f.konfirmasi_password ? (kpwMatch ? 'border-emerald-500' : 'border-red-400') : '')}
-                  type={showKpw ? 'text' : 'password'}
-                  required
-                  placeholder="Ulangi password di samping"
-                  value={f.konfirmasi_password}
-                  onChange={set('konfirmasi_password')}
-                />
-                <button
-                  type="button"
-                  className="absolute right-2.5 top-2.5 text-xs text-slate-400 hover:text-brand-600"
-                  onClick={() => setShowKpw(!showKpw)}
-                >
-                  {showKpw ? 'Sembunyikan' : 'Tampilkan'}
-                </button>
               </div>
-            </Field>
+              <Link to="/" className="text-xs font-semibold text-white/75 hover:text-white self-start sm:self-center">
+                ← Kembali ke Beranda
+              </Link>
+            </div>
+            <p className="mt-3 text-xs sm:text-sm text-white/75 leading-relaxed">
+              Silakan isi data kependudukan Anda dengan benar. Data akan diverifikasi oleh petugas kelurahan sebelum layanan surat dapat diakses.
+            </p>
+          </div>
+
+          <div className="p-6 sm:p-8">
+            <form onSubmit={go} className="space-y-4">
+              {/* BAGIAN 1: IDENTITAS KEPENDUDUKAN RESMI */}
+              <div className="rounded-xl border border-slate-200 border-l-4 border-l-[#1a3a5c] bg-slate-50/70 p-4">
+                <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#1a3a5c]">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1a3a5c] text-[11px] font-bold text-[#c8a84b]">1</span>
+                  Identitas Kependudukan Resmi
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field
+                    l="Nomor Induk Kependudukan (NIK)"
+                    req
+                    hint={f.nik && (nikValid ? '✓ 16 digit valid' : 'Harus tepat 16 digit angka')}
+                    err={f.nik && !nikValid && !/^\d*$/.test(f.nik) ? 'Hanya boleh berisi angka' : null}
+                  >
+                    <input
+                      className={'inp ' + (f.nik ? (nikValid ? 'border-emerald-500' : 'border-red-400') : '')}
+                      required
+                      maxLength={16}
+                      pattern="\d{16}"
+                      placeholder="Contoh: 3201010101900001"
+                      value={f.nik}
+                      onChange={set('nik')}
+                    />
+                  </Field>
+
+                  <Field
+                    l="Nomor Kartu Keluarga (KK)"
+                    req
+                    hint={f.no_kk && (kkValid ? '✓ 16 digit valid' : 'Harus tepat 16 digit angka')}
+                    err={f.no_kk && !kkValid && !/^\d*$/.test(f.no_kk) ? 'Hanya boleh berisi angka' : null}
+                  >
+                    <input
+                      className={'inp ' + (f.no_kk ? (kkValid ? 'border-emerald-500' : 'border-red-400') : '')}
+                      required
+                      maxLength={16}
+                      pattern="\d{16}"
+                      placeholder="Contoh: 3201010101900002"
+                      value={f.no_kk}
+                      onChange={set('no_kk')}
+                    />
+                  </Field>
+                </div>
+
+                <Field l="Nama Lengkap (Sesuai KTP/KK)" req>
+                  <input
+                    className="inp"
+                    required
+                    minLength={3}
+                    placeholder="Contoh: Budi Santoso"
+                    value={f.nama}
+                    onChange={set('nama')}
+                  />
+                </Field>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field l="Tempat Lahir" req>
+                    <input
+                      className="inp"
+                      required
+                      placeholder="Contoh: Medan"
+                      value={f.tempat_lahir}
+                      onChange={set('tempat_lahir')}
+                    />
+                  </Field>
+                  <Field l="Tanggal Lahir" req>
+                    <input
+                      className="inp"
+                      type="date"
+                      required
+                      value={f.tanggal_lahir}
+                      onChange={set('tanggal_lahir')}
+                    />
+                  </Field>
+                  <Field l="Jenis Kelamin" req>
+                    <select className="inp" required value={f.jenis_kelamin} onChange={set('jenis_kelamin')}>
+                      <option value="">Pilih</option>
+                      <option value="L">Laki-laki</option>
+                      <option value="P">Perempuan</option>
+                    </select>
+                  </Field>
+                </div>
+              </div>
+
+              {/* BAGIAN 2: ALAMAT & KONTAK */}
+              <div className="rounded-xl border border-slate-200 border-l-4 border-l-[#c8a84b] bg-slate-50/70 p-4">
+                <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#1a3a5c]">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#c8a84b] text-[11px] font-bold text-[#1a3a5c]">2</span>
+                  Alamat &amp; Kontak Aktif
+                </h2>
+                <Field l="Alamat Lengkap (Jalan, RT/RW, Kelurahan)" req>
+                  <textarea
+                    className="inp"
+                    rows={2}
+                    required
+                    minLength={5}
+                    placeholder="Contoh: Jl. STM No. 15 RT 02/RW 03, Kelurahan Suka Maju"
+                    value={f.alamat}
+                    onChange={set('alamat')}
+                  />
+                </Field>
+
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <Field l="Pekerjaan">
+                    <input
+                      className="inp"
+                      placeholder="Contoh: Karyawan Swasta"
+                      value={f.pekerjaan}
+                      onChange={set('pekerjaan')}
+                    />
+                  </Field>
+                  <Field l="Nomor HP / WhatsApp" req hint={f.telepon && (telpValid ? '✓ Nomor aktif' : 'Minimal 9 digit')}>
+                    <input
+                      className="inp"
+                      type="tel"
+                      required
+                      placeholder="Contoh: 081234567890"
+                      value={f.telepon}
+                      onChange={set('telepon')}
+                    />
+                  </Field>
+                  <Field l="Email (Opsional)" hint="Untuk notifikasi status">
+                    <input
+                      className="inp"
+                      type="email"
+                      placeholder="warga@email.com"
+                      value={f.email}
+                      onChange={set('email')}
+                    />
+                  </Field>
+                </div>
+              </div>
+
+              {/* BAGIAN 3: KEAMANAN AKUN */}
+              <div className="rounded-xl border border-slate-200 border-l-4 border-l-[#1a3a5c] bg-slate-50/70 p-4">
+                <h2 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-[#1a3a5c]">
+                  <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#1a3a5c] text-[11px] font-bold text-[#c8a84b]">3</span>
+                  Keamanan Akun
+                </h2>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Field l="Password" req>
+                    <div className="relative">
+                      <input
+                        className={'inp pr-24 ' + (f.password ? (pwValid ? 'border-emerald-500' : 'border-amber-400') : '')}
+                        type={showPw ? 'text' : 'password'}
+                        required
+                        minLength={8}
+                        placeholder="Min. 8 karakter (huruf & angka)"
+                        value={f.password}
+                        onChange={set('password')}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-2.5 top-2.5 text-xs font-semibold text-[#1a3a5c] hover:text-[#0f2340]"
+                        onClick={() => setShowPw(!showPw)}
+                      >
+                        {showPw ? 'Sembunyikan' : 'Tampilkan'}
+                      </button>
+                    </div>
+
+                    {/* Password Strength Indicator */}
+                    {f.password && (
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center justify-between text-[11px]">
+                          <span className="text-slate-500">Kekuatan Password:</span>
+                          <span className={'font-bold ' + pwStrength.text}>{pwStrength.label}</span>
+                        </div>
+                        <div className="h-1.5 w-full rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className={'h-full transition-all duration-300 ' + pwStrength.color}
+                            style={{ width: pwStrength.width }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </Field>
+
+                  <Field
+                    l="Konfirmasi Password"
+                    req
+                    hint={f.konfirmasi_password && (kpwMatch ? '✓ Password cocok' : 'Password belum cocok')}
+                  >
+                    <div className="relative">
+                      <input
+                        className={'inp pr-24 ' + (f.konfirmasi_password ? (kpwMatch ? 'border-emerald-500' : 'border-red-400') : '')}
+                        type={showKpw ? 'text' : 'password'}
+                        required
+                        placeholder="Ulangi password di samping"
+                        value={f.konfirmasi_password}
+                        onChange={set('konfirmasi_password')}
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-2.5 top-2.5 text-xs font-semibold text-[#1a3a5c] hover:text-[#0f2340]"
+                        onClick={() => setShowKpw(!showKpw)}
+                      >
+                        {showKpw ? 'Sembunyikan' : 'Tampilkan'}
+                      </button>
+                    </div>
+                  </Field>
+                </div>
+              </div>
+
+              {/* PERSETUJUAN SYARAT & KETENTUAN */}
+              <label className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-3.5 text-xs text-slate-700 cursor-pointer hover:bg-slate-50">
+                <input
+                  type="checkbox"
+                  required
+                  checked={f.setuju_syarat}
+                  onChange={set('setuju_syarat')}
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-[#1a3a5c] focus:ring-[#1a3a5c]"
+                />
+                <span className="leading-relaxed">
+                  Saya menyatakan dengan sungguh-sungguh bahwa seluruh data identitas (NIK, Kartu Keluarga, dan data diri) yang saya masukkan adalah benar, sah, dan sesuai dengan dokumen kependudukan asli. Saya memahami bahwa data akan diverifikasi oleh petugas kelurahan sebelum akun diaktifkan.
+                </span>
+              </label>
+
+              <Msg m={m} />
+
+              <button
+                className="btn w-full rounded-lg bg-[#1a3a5c] hover:bg-[#122a45] text-white py-3 font-bold text-base shadow-sm transition-colors disabled:opacity-50"
+                disabled={loading || !f.setuju_syarat}
+              >
+                {loading ? 'Memproses Pendaftaran…' : 'Daftarkan Akun Warga'}
+              </button>
+            </form>
+
+            <p className="mt-5 text-center text-sm text-slate-600 pt-3 border-t border-slate-100">
+              Sudah memiliki akun?{' '}
+              <Link className="font-bold text-[#1a3a5c] hover:text-[#0f2340] underline underline-offset-2" to="/login">
+                Masuk di sini
+              </Link>
+            </p>
           </div>
         </div>
-
-        {/* PERSETUJUAN SYARAT & KETENTUAN */}
-        <label className="flex items-start gap-3 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700 cursor-pointer hover:bg-slate-50">
-          <input
-            type="checkbox"
-            required
-            checked={f.setuju_syarat}
-            onChange={set('setuju_syarat')}
-            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-600 focus:ring-brand-600"
-          />
-          <span className="leading-relaxed">
-            Saya menyatakan dengan sungguh-sungguh bahwa seluruh data identitas (NIK, Kartu Keluarga, dan data diri) yang saya masukkan adalah benar, sah, dan sesuai dengan dokumen kependudukan asli. Saya memahami bahwa data akan diverifikasi oleh petugas kelurahan sebelum akun diaktifkan.
-          </span>
-        </label>
-
-        <Msg m={m} />
-
-        <button
-          className="btn btn-p w-full py-3 font-bold text-base disabled:opacity-50"
-          disabled={loading || !f.setuju_syarat}
-        >
-          {loading ? 'Memproses Pendaftaran…' : 'Daftarkan Akun Warga'}
-        </button>
-      </form>
-
-      <p className="mt-5 text-center text-sm text-slate-600">
-        Sudah memiliki akun?{' '}
-        <Link className="font-bold text-brand-600 hover:text-brand-800 underline" to="/login">
-          Masuk di sini
-        </Link>
-      </p>
-    </Center>
+      </div>
+    </div>
   );
 }
 
