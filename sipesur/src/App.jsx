@@ -1106,10 +1106,14 @@ function Center({ title, subtitle, children, maxWidth = 'max-w-md' }) {
 function Login() {
   const { login } = useAuth();
   const nav = useNavigate();
+  const [desa] = useGet('/profil-desa');
   const [f, setF] = useState({ identifier: '', password: '' });
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [m, setM] = useState();
+
+  const namaDesa = desa?.nama_desa || 'Kelurahan Suka Maju';
+  const kecamatan = desa?.kecamatan || 'Kecamatan Medan Johor';
 
   const go = async (e) => {
     e.preventDefault();
@@ -1126,85 +1130,165 @@ function Login() {
     }
   };
 
-  const quick = [
-    ['Warga', '3201010101900001', 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'],
-    ['Petugas', 'petugas', 'bg-sky-50 text-sky-800 border-sky-200 hover:bg-sky-100'],
-    ['Lurah', 'lurah', 'bg-indigo-50 text-indigo-800 border-indigo-200 hover:bg-indigo-100'],
-    ['IT Admin', 'admin', 'bg-cyan-50 text-cyan-800 border-cyan-200 hover:bg-cyan-100'],
+  const quickAccounts = [
+    { label: 'Warga', id: '3201010101900001', icon: '🏠', cls: 'border-emerald-200 bg-emerald-50/80 text-emerald-900 hover:border-emerald-400 hover:bg-emerald-100/70' },
+    { label: 'Petugas', id: 'petugas', icon: '🪪', cls: 'border-sky-200 bg-sky-50/80 text-sky-900 hover:border-sky-400 hover:bg-sky-100/70' },
+    { label: 'Lurah', id: 'lurah', icon: '🏛️', cls: 'border-indigo-200 bg-indigo-50/80 text-indigo-900 hover:border-indigo-400 hover:bg-indigo-100/70' },
+    { label: 'IT Admin', id: 'admin', icon: '🖥️', cls: 'border-cyan-200 bg-cyan-50/80 text-cyan-900 hover:border-cyan-400 hover:bg-cyan-100/70' },
   ];
 
   return (
-    <Center
-      title="Masuk"
-      subtitle="Warga masuk dengan NIK atau email. Petugas, lurah, dan IT Admin dengan NIP atau username."
-    >
-      <form onSubmit={go}>
-        <Field l="NIK, NIP, username, atau email" req>
-          <input
-            className="inp"
-            placeholder="Contoh: 3201010101900001 atau petugas"
-            required
-            autoFocus
-            autoComplete="username"
-            value={f.identifier}
-            onChange={(e) => setF({ ...f, identifier: e.target.value })}
-          />
-        </Field>
-        <Field l="Password" req>
-          <div className="relative">
-            <input
-              className="inp pr-24"
-              type={showPw ? 'text' : 'password'}
-              placeholder="Masukkan password"
-              required
-              autoComplete="current-password"
-              value={f.password}
-              onChange={(e) => setF({ ...f, password: e.target.value })}
-            />
-            <button
-              type="button"
-              aria-pressed={showPw}
-              className="absolute inset-y-0 right-0 px-3 text-sm font-bold text-brand-700 hover:text-brand-900"
-              onClick={() => setShowPw(!showPw)}
-            >
-              {showPw ? 'Sembunyikan' : 'Tampilkan'}
-            </button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-emerald-50/40 to-sky-50/40 flex flex-col justify-center p-4 py-8 sm:p-6">
+      <div className="mx-auto w-full max-w-4xl">
+        <div className="grid overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg md:grid-cols-12">
+          {/* Panel Kiri: Identitas Portal & Info Peran */}
+          <div className="md:col-span-5 bg-gradient-to-br from-emerald-900 via-teal-800 to-brand-900 text-white p-6 sm:p-7 flex flex-col justify-between gap-6">
+            <div>
+              <Link to="/" className="inline-flex items-center gap-3">
+                {desa?.logo_url ? (
+                  <img src={desa.logo_url} alt="Logo" className="w-10 h-10 object-contain rounded-lg bg-white/95 p-1 shadow-xs" />
+                ) : (
+                  <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-white font-serif font-bold text-lg flex items-center justify-center shadow-xs">
+                    S
+                  </div>
+                )}
+                <div>
+                  <div className="font-serif text-xl font-bold leading-none tracking-tight text-white">SIPESUR</div>
+                  <div className="mt-1 text-xs text-emerald-100/90 font-medium">{namaDesa}</div>
+                </div>
+              </Link>
+
+              <h2 className="mt-6 font-serif text-2xl font-bold leading-snug text-white">
+                Portal Layanan Surat & Administrasi Terpadu
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm text-emerald-100/85 leading-relaxed">
+                Sistem pelayanan digital resmi {namaDesa}, {kecamatan}. Masuk sesuai peran Anda untuk mengakses layanan kependudukan dan tata usaha.
+              </p>
+            </div>
+
+            <div className="space-y-2 text-xs">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-200/90">
+                Akses Multi-Peran Terintegrasi
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏠</span>
+                  <span className="truncate font-medium">Warga · Pengajuan & Unduh Surat</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🪪</span>
+                  <span className="truncate font-medium">Petugas · Verifikasi & Tata Usaha</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🏛️</span>
+                  <span className="truncate font-medium">Lurah · ACC, TTE & Disposisi</span>
+                </div>
+                <div className="rounded-lg bg-white/10 border border-white/15 px-3 py-2 flex items-center gap-2">
+                  <span>🖥️</span>
+                  <span className="truncate font-medium">Admin IT · Sistem & Template</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </Field>
 
-        <Msg m={m} />
+          {/* Panel Kanan: Form Masuk Akun */}
+          <div className="md:col-span-7 p-6 sm:p-8 flex flex-col justify-center">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold text-emerald-800">
+                🔐 Autentikasi Akun
+              </span>
+              <h1 className="mt-2.5 font-serif text-2xl font-bold text-slate-950">Masuk ke Akun Anda</h1>
+              <p className="mt-1 text-xs sm:text-sm text-slate-600">
+                Warga menggunakan <strong>NIK / email</strong>. Petugas, Lurah, dan Admin IT menggunakan <strong>NIP / username</strong>.
+              </p>
+            </div>
 
-        <button className="btn btn-p w-full" disabled={loading}>
-          {loading ? 'Memeriksa…' : 'Masuk'}
-        </button>
-      </form>
+            <form onSubmit={go} className="mt-5 space-y-1">
+              <Field l="NIK, NIP, Username, atau Email" req>
+                <input
+                  className="inp rounded-lg"
+                  placeholder="Contoh: 3201010101900001, petugas, lurah, atau admin"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                  value={f.identifier}
+                  onChange={(e) => setF({ ...f, identifier: e.target.value })}
+                />
+              </Field>
+              <Field l="Password" req>
+                <div className="relative">
+                  <input
+                    className="inp rounded-lg pr-24"
+                    type={showPw ? 'text' : 'password'}
+                    placeholder="Masukkan password akun"
+                    required
+                    autoComplete="current-password"
+                    value={f.password}
+                    onChange={(e) => setF({ ...f, password: e.target.value })}
+                  />
+                  <button
+                    type="button"
+                    aria-pressed={showPw}
+                    className="absolute inset-y-0 right-0 px-3 text-xs sm:text-sm font-bold text-emerald-700 hover:text-emerald-900"
+                    onClick={() => setShowPw(!showPw)}
+                  >
+                    {showPw ? 'Sembunyikan' : 'Tampilkan'}
+                  </button>
+                </div>
+              </Field>
 
-      <div className="mt-5 rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700">
-        <div className="font-bold text-slate-900 mb-2">Akun uji coba (klik untuk isi otomatis · password: <code className="font-bold">Password123</code>)</div>
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
-          {quick.map(([label, id, cls]) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setF({ identifier: id, password: 'Password123' });
-                setM(null);
-              }}
-              className={`rounded border px-2 py-1.5 text-center font-bold transition-colors ${cls}`}
-            >
-              {label}
-            </button>
-          ))}
+              <Msg m={m} />
+
+              <button
+                className="btn w-full rounded-lg bg-gradient-to-r from-emerald-700 to-teal-700 hover:from-emerald-800 hover:to-teal-800 text-white py-2.5 font-bold shadow-sm transition-all"
+                disabled={loading}
+              >
+                {loading ? 'Memeriksa kredensial…' : 'Masuk Sekarang →'}
+              </button>
+            </form>
+
+            {/* Isi Cepat Akun Demo */}
+            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-3.5">
+              <div className="flex flex-wrap items-center justify-between gap-1 mb-2.5">
+                <span className="text-xs font-bold text-slate-800">⚡ Isi Cepat Akun Uji Coba</span>
+                <span className="text-[11px] text-slate-500">Password: <code className="font-mono font-bold text-slate-700">Password123</code></span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {quickAccounts.map((acc) => (
+                  <button
+                    key={acc.id}
+                    type="button"
+                    onClick={() => {
+                      setF({ identifier: acc.id, password: 'Password123' });
+                      setM(null);
+                    }}
+                    className={`rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-colors ${acc.cls}`}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <span>{acc.icon}</span>
+                      <span>{acc.label}</span>
+                    </div>
+                    <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-80">{acc.id}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs sm:text-sm text-slate-600 pt-3 border-t border-slate-100">
+              <span>
+                Belum punya akun warga?{' '}
+                <Link className="font-bold text-emerald-700 underline underline-offset-2 hover:text-emerald-900" to="/register">
+                  Daftar Warga Baru
+                </Link>
+              </span>
+              <Link to="/" className="font-semibold text-slate-600 hover:text-slate-900">
+                ← Kembali ke Beranda
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-
-      <p className="mt-5 text-center text-sm text-slate-700">
-        Belum punya akun warga?{' '}
-        <Link className="font-bold text-brand-700 underline underline-offset-2 hover:text-brand-900" to="/register">
-          Daftar
-        </Link>
-      </p>
-    </Center>
+    </div>
   );
 }
 
