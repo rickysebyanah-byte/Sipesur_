@@ -140,10 +140,12 @@ export async function buatPdf(opts, file) {
   }
 
   // Garis pembatas tebal ganda standar resmi pemerintah
-  doc.moveDown(0.4);
-  doc.moveTo(L, doc.y).lineTo(R, doc.y).lineWidth(2.2).stroke();
-  doc.moveTo(L, doc.y + 2).lineTo(R, doc.y + 2).lineWidth(0.5).stroke();
+  const lineY = Math.max(doc.y + 5, kopStartY + (logoBuffer ? 58 : 0));
+  doc.y = lineY;
+  doc.moveTo(L, lineY).lineTo(R, lineY).lineWidth(2.2).stroke();
+  doc.moveTo(L, lineY + 2.5).lineTo(R, lineY + 2.5).lineWidth(0.5).stroke();
   doc.lineWidth(1);
+  doc.y = lineY + 4;
 
   // ----------------------------------------------------------------
   // 2. JUDUL & NOMOR SURAT

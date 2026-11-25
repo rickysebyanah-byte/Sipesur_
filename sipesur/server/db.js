@@ -413,11 +413,15 @@ function executeLocalSql(sql, params = []) {
     return list.slice(0, 1);
   }
 
-  // 2. UPDATE profil_desa
+  // 2. UPDATE / INSERT profil_desa
   if (upper.startsWith('UPDATE PROFIL_DESA') || upper.startsWith('UPDATE "PROFIL_DESA"')) {
-    const p = dbData.profil_desa[0] || {};
-    // Extract parameters
-    if (params.length >= 10) {
+    const p = dbData.profil_desa[0] || { id: 1 };
+    if (upper.includes('SET LOGO_URL = ?') && params.length >= 1) {
+      p.logo_url = params[0];
+      p.updated_at = new Date().toISOString();
+      dbData.profil_desa[0] = p;
+      saveLocalDb();
+    } else if (params.length >= 10) {
       p.nama_desa = params[0];
       p.kecamatan = params[1];
       p.kabupaten_kota = params[2];
@@ -436,6 +440,32 @@ function executeLocalSql(sql, params = []) {
       saveLocalDb();
     }
     return [{ rowCount: 1, affectedRows: 1 }];
+  }
+
+  if (upper.startsWith('INSERT INTO PROFIL_DESA') || upper.startsWith('INSERT INTO "PROFIL_DESA"')) {
+    const p =
+      params.length === 2
+        ? { id: 1, nama_desa: params[0], logo_url: params[1], updated_at: new Date().toISOString() }
+        : {
+            id: 1,
+            nama_desa: params[0],
+            kecamatan: params[1],
+            kabupaten_kota: params[2],
+            provinsi: params[3],
+            alamat: params[4],
+            kode_pos: params[5],
+            telepon: params[6],
+            email: params[7],
+            website: params[8],
+            logo_url: params[9],
+            nama_lurah: params[10],
+            nip_lurah: params[11],
+            jabatan_lurah: params[12],
+            updated_at: new Date().toISOString(),
+          };
+    dbData.profil_desa[0] = p;
+    saveLocalDb();
+    return [{ id: 1, rowCount: 1, affectedRows: 1 }];
   }
 
   // 3a. VERIFIKASI WARGA: SELECT users u JOIN warga w

@@ -1416,9 +1416,11 @@ async function prosesTerbitkanSurat(pengajuanId, actorUser, signatureOverride = 
     file = path.resolve(s.file_path);
 
     const isOldMock = (str) => !str || /merdeka|contoh|sukamaju(?!\.medan)|\(021\)|12345/i.test(String(str));
-    const mustRegenerate = forceRegenerate || !fs.existsSync(file) || isOldMock(s.lurah_nama) || isOldMock(s.lurah_nip);
+    const savedKop = typeof s.kop_data === 'string' ? (() => { try { return JSON.parse(s.kop_data); } catch { return {}; } })() : (s.kop_data || {});
+    const kopLogoChanged = (savedKop.logo_url || null) !== (kop.logo_url || null);
+    const mustRegenerate = forceRegenerate || !fs.existsSync(file) || isOldMock(s.lurah_nama) || isOldMock(s.lurah_nip) || kopLogoChanged;
 
-    // Jika forceRegenerate ATAU file fisik belum ada atau terhapus atau data lama, buat ulang PDF dengan data dinamis
+    // Jika forceRegenerate ATAU file fisik belum ada atau terhapus atau data/logo berubah, buat ulang PDF dengan data dinamis
     if (mustRegenerate) {
       const storageDir = path.join(DATA_DIR, 'storage', 'surat');
       fs.mkdirSync(storageDir, { recursive: true });
@@ -1457,6 +1459,7 @@ async function prosesTerbitkanSurat(pengajuanId, actorUser, signatureOverride = 
         },
         file
       );
+      await q('UPDATE surat SET kop_data=? WHERE id=?', [JSON.stringify(kop), s.id]);
     }
 
     if (path.resolve(s.file_path) !== file) {
@@ -1615,8 +1618,13 @@ app.get(
     if (!s) throw fail(404, 'Surat belum terbit untuk pengajuan ini');
 
     let fullPath = path.resolve(s.file_path);
-    // Jika file fisik belum ada atau hilang atau ada instruksi regenerasi, lakukan generate ulang secara otomatis
-    if (req.query.refresh || req.query.regenerate || !fs.existsSync(fullPath)) {
+    const [desaNow] = await q('SELECT logo_url, updated_at FROM profil_desa ORDER BY id ASC LIMIT 1');
+    const savedKop = typeof s.kop_data === 'string' ? (() => { try { return JSON.parse(s.kop_data); } catch { return {}; } })() : (s.kop_data || {});
+    const logoChanged = desaNow && (savedKop.logo_url || null) !== (desaNow.logo_url || null);
+    const pdfOutdated = desaNow?.updated_at && fs.existsSync(fullPath) && new Date(desaNow.updated_at).getTime() > fs.statSync(fullPath).mtimeMs;
+
+    // Jika file fisik belum ada, hilang, logo/kop diperbarui, atau ada instruksi regenerasi, buat ulang otomatis
+    if (req.query.refresh || req.query.regenerate || !fs.existsSync(fullPath) || logoChanged || pdfOutdated) {
       try {
         await prosesTerbitkanSurat(p.id, req.user, true);
         const [updatedS] = await q('SELECT * FROM surat WHERE pengajuan_id=?', [p.id]);

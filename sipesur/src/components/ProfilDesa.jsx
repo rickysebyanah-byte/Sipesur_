@@ -121,6 +121,28 @@ export default function ProfilDesa({ userRole }) {
 
   const ch = (key) => (e) => setF((prev) => ({ ...prev, [key]: e.target.value }));
 
+  const convertImageToPngBlob = (file) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxSide = 320;
+        const scale = Math.min(1, maxSide / Math.max(img.width || 1, img.height || 1));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objUrl);
+        canvas.toBlob((blob) => resolve(blob || file), 'image/png');
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        resolve(file);
+      };
+      img.src = objUrl;
+    });
+
   const handleLogoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -128,15 +150,17 @@ export default function ProfilDesa({ userRole }) {
       setMsg({ type: 'error', text: 'Logo harus berupa berkas PNG, JPG, atau WebP.' });
       return;
     }
-    const formData = new FormData();
-    formData.append('logo', file);
     try {
       setUploadingLogo(true);
       setMsg(null);
+      const pngBlob = await convertImageToPngBlob(file);
+      const formData = new FormData();
+      formData.append('logo', pngBlob, 'logo-kelurahan.png');
       const res = await api.post('/profil-desa/logo', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setF((prev) => ({ ...prev, logo_url: res.data.logo_url }));
+      setOrig((prev) => (prev ? { ...prev, logo_url: res.data.logo_url } : prev));
       setMsg({ type: 'success', text: 'Logo kelurahan berhasil diunggah dan langsung diterapkan ke kop surat.' });
     } catch (err) {
       setMsg({ type: 'error', text: err.response?.data?.message || 'Gagal mengunggah logo.' });
