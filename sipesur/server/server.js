@@ -1750,17 +1750,15 @@ app.get(
   '/api/verifikasi/:kode',
   ah(async (req, res) => {
     const [s] = await q(
-      `SELECT s.nomor, s.terbit_at, s.kode_verifikasi, s.ditandatangani_oleh,
+      `SELECT s.nomor, s.terbit_at, s.kode_verifikasi, s.lurah_nama, s.lurah_nip,
               j.nama AS jenis, j.kode AS jenis_kode,
-              u.nama AS pemohon, p.status, p.kode AS kode_pengajuan, p.keperluan,
-              w.nik,
-              l.nama AS penandatangan_nama, l.nip AS penandatangan_nip, l.jabatan AS penandatangan_jabatan
+              u.nama AS pemohon, p.status, p.kode AS kode_pengajuan, p.data_form,
+              w.nik
        FROM surat s
        JOIN pengajuan p ON p.id = s.pengajuan_id
        JOIN jenis_surat j ON j.id = p.jenis_surat_id
        JOIN users u ON u.id = p.user_id
        LEFT JOIN warga w ON w.user_id = u.id
-       LEFT JOIN users l ON l.id = s.ditandatangani_oleh
        WHERE s.kode_verifikasi = ?`,
       [req.params.kode]
     );
@@ -1772,7 +1770,7 @@ app.get(
     }
 
     const [pd] = await q(
-      'SELECT nama_desa, kecamatan, kota, logo_url, nama_lurah, nip_lurah FROM profil_desa LIMIT 1'
+      'SELECT nama_desa, kecamatan, kabupaten_kota, logo_url, nama_lurah, nip_lurah, jabatan_lurah FROM profil_desa LIMIT 1'
     ).catch(() => []);
 
     // Masking nama belakang dan NIK agar privasi terlindungi
@@ -1780,9 +1778,17 @@ app.get(
       ? s.pemohon.split(' ').map((n, idx) => (idx === 0 ? n : n[0] + '***')).join(' ')
       : 'Warga';
 
+    let keperluan = null;
+    try {
+      const df = typeof s.data_form === 'string' ? JSON.parse(s.data_form) : (s.data_form || {});
+      keperluan = df?.keperluan || null;
+    } catch {
+      keperluan = null;
+    }
+
     const namaDesa = pd?.nama_desa || 'Kelurahan Suka Maju';
     const kecamatan = pd?.kecamatan || 'Kecamatan Medan Johor';
-    const kota = pd?.kota || 'Kota Medan';
+    const kota = pd?.kabupaten_kota || 'Pemerintah Kota Medan';
 
     res.json({
       valid: true,
@@ -1793,13 +1799,13 @@ app.get(
       jenis_kode: s.jenis_kode,
       pemohon: namaTersensor,
       nik_masked: s.nik ? maskId(s.nik) : null,
-      keperluan: s.keperluan || null,
+      keperluan,
       instansi: kota.toLowerCase().startsWith('pemerintah') ? kota : `Pemerintah ${kota}`,
       kelurahan: `${namaDesa}, ${kecamatan}`,
       logo_url: pd?.logo_url || null,
-      pejabat_penandatangan: s.penandatangan_nama || pd?.nama_lurah || 'Lurah Suka Maju',
-      jabatan_penandatangan: s.penandatangan_jabatan || `Lurah ${namaDesa.replace(/^kelurahan\s+/i, '')}`,
-      nip_penandatangan: s.penandatangan_nip || pd?.nip_lurah || null,
+      pejabat_penandatangan: s.lurah_nama || pd?.nama_lurah || 'Lurah Suka Maju',
+      jabatan_penandatangan: pd?.jabatan_lurah || `Lurah ${namaDesa.replace(/^kelurahan\s+/i, '')}`,
+      nip_penandatangan: s.lurah_nip || pd?.nip_lurah || null,
       terbit_at: s.terbit_at,
       status: s.status,
       status_surat: s.status === 'issued' ? 'Diterbitkan (Sah & Berlaku)' : 'Dibatalkan / Tidak Berlaku',
