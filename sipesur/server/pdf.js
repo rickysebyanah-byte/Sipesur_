@@ -261,14 +261,32 @@ export async function buatPdf(opts, file) {
   // ----------------------------------------------------------------
   const sigY = Math.min(Math.max(doc.y + 10, 600), 635);
 
-  // QR Code (kiri bawah)
-  doc.image(qrBuffer, L + 10, sigY, { width: 72 });
-  doc.font('Helvetica').fontSize(7).fillColor('#333333').text(
-    'Pindai QR untuk verifikasi\nkeaslian dokumen resmi',
-    L,
-    sigY + 76,
-    { width: 92, align: 'center', lineBreak: true }
+  // QR Code (kiri bawah) dengan bingkai resmi & kode verifikasi
+  const verifCode = url ? String(url).split('/').filter(Boolean).pop() : '';
+  doc.save();
+  doc.roundedRect(L + 2, sigY - 4, 88, 102, 4).lineWidth(0.6).stroke('#cbd5e1');
+  doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#1a3a5c').text(
+    'VERIFIKASI DIGITAL',
+    L + 2,
+    sigY,
+    { width: 88, align: 'center' }
   );
+  doc.image(qrBuffer, L + 14, sigY + 8, { width: 64 });
+  doc.font('Helvetica').fontSize(6.2).fillColor('#334155').text(
+    'Pindai QR untuk verifikasi\nkeaslian dokumen resmi',
+    L + 2,
+    sigY + 74,
+    { width: 88, align: 'center', lineBreak: true }
+  );
+  if (verifCode && verifCode !== 'sipesur.id') {
+    doc.font('Helvetica-Bold').fontSize(5.5).fillColor('#475569').text(
+      verifCode,
+      L + 2,
+      sigY + 90,
+      { width: 88, align: 'center' }
+    );
+  }
+  doc.restore();
 
   // Area tanda tangan (kanan bawah)
   const sigX = 325;

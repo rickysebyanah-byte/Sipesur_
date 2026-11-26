@@ -1750,15 +1750,17 @@ app.get(
   '/api/verifikasi/:kode',
   ah(async (req, res) => {
     const [s] = await q(
-      `SELECT s.nomor, s.terbit_at, s.kode_verifikasi,
+      `SELECT s.nomor, s.terbit_at, s.kode_verifikasi, s.ditandatangani_oleh,
               j.nama AS jenis, j.kode AS jenis_kode,
-              u.nama AS pemohon, p.status, p.kode AS kode_pengajuan,
-              w.nik
+              u.nama AS pemohon, p.status, p.kode AS kode_pengajuan, p.keperluan,
+              w.nik,
+              l.nama AS penandatangan_nama, l.nip AS penandatangan_nip, l.jabatan AS penandatangan_jabatan
        FROM surat s
        JOIN pengajuan p ON p.id = s.pengajuan_id
        JOIN jenis_surat j ON j.id = p.jenis_surat_id
        JOIN users u ON u.id = p.user_id
        LEFT JOIN warga w ON w.user_id = u.id
+       LEFT JOIN users l ON l.id = s.ditandatangani_oleh
        WHERE s.kode_verifikasi = ?`,
       [req.params.kode]
     );
@@ -1769,23 +1771,39 @@ app.get(
       });
     }
 
+    const [pd] = await q(
+      'SELECT nama_desa, kecamatan, kota, logo_url, nama_lurah, nip_lurah FROM profil_desa LIMIT 1'
+    ).catch(() => []);
+
     // Masking nama belakang dan NIK agar privasi terlindungi
     const namaTersensor = s.pemohon
       ? s.pemohon.split(' ').map((n, idx) => (idx === 0 ? n : n[0] + '***')).join(' ')
       : 'Warga';
 
+    const namaDesa = pd?.nama_desa || 'Kelurahan Suka Maju';
+    const kecamatan = pd?.kecamatan || 'Kecamatan Medan Johor';
+    const kota = pd?.kota || 'Kota Medan';
+
     res.json({
       valid: true,
+      kode_verifikasi: s.kode_verifikasi,
+      kode_pengajuan: s.kode_pengajuan,
       nomor: s.nomor,
       jenis: s.jenis,
       jenis_kode: s.jenis_kode,
       pemohon: namaTersensor,
       nik_masked: s.nik ? maskId(s.nik) : null,
-      instansi: 'Pemerintah Kota Medan',
-      kelurahan: 'Kelurahan Suka Maju, Kecamatan Medan Johor',
-      pejabat_penandatangan: 'Lurah Suka Maju',
+      keperluan: s.keperluan || null,
+      instansi: kota.toLowerCase().startsWith('pemerintah') ? kota : `Pemerintah ${kota}`,
+      kelurahan: `${namaDesa}, ${kecamatan}`,
+      logo_url: pd?.logo_url || null,
+      pejabat_penandatangan: s.penandatangan_nama || pd?.nama_lurah || 'Lurah Suka Maju',
+      jabatan_penandatangan: s.penandatangan_jabatan || `Lurah ${namaDesa.replace(/^kelurahan\s+/i, '')}`,
+      nip_penandatangan: s.penandatangan_nip || pd?.nip_lurah || null,
       terbit_at: s.terbit_at,
+      status: s.status,
       status_surat: s.status === 'issued' ? 'Diterbitkan (Sah & Berlaku)' : 'Dibatalkan / Tidak Berlaku',
+      metode_ttd: 'Tanda Tangan Elektronik (TTE) & QR Code Terdaftar',
       keterangan: 'Surat ini diterbitkan secara digital melalui Sistem Informasi Pelayanan Surat Kelurahan (SIPESUR). Keabsahan dokumen dijamin sesuai data yang tersimpan dalam sistem informasi kependudukan resmi kelurahan.',
     });
   })

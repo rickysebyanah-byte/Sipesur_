@@ -1778,29 +1778,174 @@ function Verifikasi() {
     api
       .get('/verifikasi/' + kode)
       .then((x) => setR(x.data))
-      .catch(() => setR({ valid: false }));
+      .catch((err) => setR({ valid: false, message: err?.response?.data?.message }));
   }, [kode]);
 
+  const terbitFormatted = r?.terbit_at
+    ? new Date(r.terbit_at).toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      })
+    : '-';
+
+  const isIssued = r?.valid && r?.status !== 'cancelled' && r?.status !== 'ditolak';
+
   return (
-    <Center title="Keaslian surat" subtitle="Pemeriksaan keaslian surat resmi kelurahan">
+    <Center
+      title="Verifikasi Keaslian Surat"
+      subtitle="Pemeriksaan keabsahan dokumen resmi digital SIPESUR"
+      maxWidth="max-w-2xl"
+    >
       {!r ? (
-        <p className="py-4 text-sm text-slate-600">Memeriksa surat…</p>
+        <div className="py-8 text-center space-y-2">
+          <div className="inline-block h-7 w-7 animate-spin rounded-full border-4 border-[#1a3a5c] border-t-[#c8a84b]" />
+          <p className="text-sm font-medium text-slate-600">Memeriksa keaslian dokumen di pangkalan data resmi…</p>
+        </div>
       ) : r.valid ? (
-        <div className="border-l-4 border-brand-700 bg-brand-50 p-4 text-sm text-brand-900">
-          <p className="text-base font-bold">Surat ini asli dan terdaftar</p>
-          <dl className="mt-3 space-y-1.5">
-            <div><dt className="inline text-slate-600">Nomor surat: </dt><dd className="inline font-bold">{r.nomor}</dd></div>
-            <div><dt className="inline text-slate-600">Jenis surat: </dt><dd className="inline font-bold">{r.jenis}</dd></div>
-            <div><dt className="inline text-slate-600">Nama pemohon: </dt><dd className="inline font-bold">{r.pemohon}</dd></div>
-            <div><dt className="inline text-slate-600">Tanggal terbit: </dt><dd className="inline font-bold">{tg(r.terbit_at)}</dd></div>
-          </dl>
+        <div className="space-y-4">
+          {/* Header Sertifikat Verifikasi */}
+          <div className="rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+            <div className="bg-gradient-to-r from-[#1a3a5c] via-[#1e4876] to-[#0f2340] px-5 py-4 text-white flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                {r.logo_url ? (
+                  <img src={r.logo_url} alt="Logo" className="h-11 w-11 rounded-lg bg-white/95 p-1 object-contain shadow-sm" />
+                ) : (
+                  <div className="h-11 w-11 rounded-lg bg-[#c8a84b]/20 border border-[#c8a84b]/40 text-[#c8a84b] flex items-center justify-center text-xl">
+                    🏛️
+                  </div>
+                )}
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-[#c8a84b] font-bold">{r.instansi}</div>
+                  <div className="text-sm font-bold leading-tight">{r.kelurahan}</div>
+                </div>
+              </div>
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold shadow-sm ${
+                  isIssued
+                    ? 'bg-emerald-500/20 text-emerald-100 border border-emerald-400/50'
+                    : 'bg-rose-500/20 text-rose-100 border border-rose-400/50'
+                }`}
+              >
+                <span>{isIssued ? '✅' : '⚠️'}</span>
+                {isIssued ? 'ASLI & TERVERIFIKASI' : 'TIDAK BERLAKU'}
+              </span>
+            </div>
+
+            {/* Status TTE Bar */}
+            <div className={`px-5 py-2.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b ${
+              isIssued ? 'bg-emerald-50 text-emerald-900 border-emerald-200' : 'bg-rose-50 text-rose-900 border-rose-200'
+            }`}>
+              <span className="font-semibold">
+                🔐 {r.metode_ttd || 'Tanda Tangan Elektronik (TTE) & QR Code Terdaftar'}
+              </span>
+              <span className="font-mono text-[11px] bg-white/80 px-2 py-0.5 rounded border border-current/20">
+                Kode: {r.kode_verifikasi || kode}
+              </span>
+            </div>
+
+            {/* Grid Detail Dokumen */}
+            <div className="p-5 bg-white grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-sm">
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Nomor Surat Resmi</div>
+                <div className="mt-0.5 font-bold text-[#1a3a5c] font-mono break-all">{r.nomor}</div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Jenis Surat</div>
+                <div className="mt-0.5 font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+                  <span>{r.jenis}</span>
+                  {r.jenis_kode && (
+                    <span className="text-[10px] font-mono bg-[#1a3a5c]/10 text-[#1a3a5c] px-1.5 py-0.5 rounded font-bold">
+                      {r.jenis_kode}
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Nama Pemohon (Tersensor)</div>
+                <div className="mt-0.5 font-bold text-slate-900">{r.pemohon}</div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">NIK Pemohon (Tersensor)</div>
+                <div className="mt-0.5 font-bold font-mono text-slate-900">{r.nik_masked || '-'}</div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Tanggal & Waktu Terbit</div>
+                <div className="mt-0.5 font-bold text-slate-900">{terbitFormatted} WIB</div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Status Dokumen</div>
+                <div className={`mt-0.5 font-bold ${isIssued ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  {r.status_surat}
+                </div>
+              </div>
+
+              <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3 sm:col-span-2">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Pejabat Penandatangan</div>
+                <div className="mt-0.5 font-bold text-slate-900">{r.pejabat_penandatangan}</div>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  {r.jabatan_penandatangan || 'Lurah'}
+                  {r.nip_penandatangan ? ` • NIP. ${r.nip_penandatangan}` : ''}
+                </div>
+              </div>
+
+              {r.keperluan && (
+                <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3 sm:col-span-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-wide text-slate-400">Keperluan</div>
+                  <div className="mt-0.5 text-slate-800 font-medium">{r.keperluan}</div>
+                </div>
+              )}
+
+              {r.kode_pengajuan && (
+                <div className="rounded-lg bg-slate-50 border border-slate-200/80 p-3 sm:col-span-2 flex items-center justify-between gap-2 text-xs">
+                  <span className="text-slate-500 font-medium">Nomor Registrasi Pengajuan:</span>
+                  <span className="font-mono font-bold text-slate-700">{r.kode_pengajuan}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Keterangan Keabsahan */}
+          <div className="rounded-xl border border-[#c8a84b]/40 bg-amber-50/60 p-3.5 text-xs text-slate-700 leading-relaxed">
+            <strong className="text-[#1a3a5c]">🛡️ Catatan Keabsahan:</strong> {r.keterangan}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+            <Link to="/cek-status" className="text-xs font-semibold text-[#1a3a5c] hover:underline">
+              🔍 Cek Status Permohonan Lainnya
+            </Link>
+            <Link to="/" className="btn btn-p text-xs py-2 px-4">
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="border-l-4 border-rose-700 bg-rose-50 p-4 text-sm text-rose-900">
-          <p className="text-base font-bold">Surat tidak ditemukan</p>
-          <p className="mt-1">
-            Kode pada QR ini tidak terdaftar di SIPESUR. Jika surat diterima dari orang lain, hubungi loket kelurahan.
-          </p>
+        <div className="space-y-4">
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-sm text-rose-900">
+            <div className="flex items-center gap-2.5">
+              <span className="text-2xl">❌</span>
+              <div>
+                <p className="text-base font-bold">Dokumen Surat Tidak Ditemukan</p>
+                <p className="text-xs text-rose-700 font-mono mt-0.5">Kode dipindai: {kode}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-rose-800">
+              {r.message ||
+                'Kode pada QR ini tidak terdaftar di pangkalan data resmi SIPESUR. Jika Anda menerima surat ini dari pihak lain, mohon konfirmasi langsung ke loket pelayanan kelurahan.'}
+            </p>
+          </div>
+          <div className="flex justify-end">
+            <Link to="/" className="btn btn-p text-xs py-2 px-4">
+              Kembali ke Beranda
+            </Link>
+          </div>
         </div>
       )}
     </Center>
