@@ -5,6 +5,7 @@ import SignaturePad from './components/SignaturePad';
 const ModalCetakSurat = lazy(() => import('./components/ModalCetakSurat'));
 const ProfilDesa = lazy(() => import('./components/ProfilDesa'));
 const ModalPersetujuanLurah = lazy(() => import('./components/ModalPersetujuanLurah'));
+const AccessibilityPanel = lazy(() => import('./components/AccessibilityPanel'));
 
 const Ctx = createContext();
 const useAuth = () => useContext(Ctx);
@@ -8242,6 +8243,7 @@ export default function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+          <AccessibilityPanel />
         </Suspense>
       </BrowserRouter>
     </Provider>

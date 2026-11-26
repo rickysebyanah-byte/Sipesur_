@@ -261,3 +261,104 @@ nav a[class*="border-brand-700"] {
     color: inherit !important;
   }
 }
+
+/* ================================================================
+   AKSESIBILITAS: MODE GELAP, KONTRAS TINGGI, & SPASI BACA LANSIA
+   ================================================================ */
+html.a11y-readable body {
+  font-family: 'Atkinson Hyperlegible', sans-serif !important;
+  letter-spacing: 0.025em;
+  line-height: 1.75;
+}
+
+html.a11y-readable a {
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+}
+
+/* Mode Gelap (Dark Mode) — tidak memengaruhi area cetak surat resmi */
+html.a11y-dark body {
+  background-color: #0b1220 !important;
+  background-image: none !important;
+  color: #e2e8f0 !important;
+}
+
+html.a11y-dark .card,
+html.a11y-dark .bg-white:not(.print-area):not(.print-area *) {
+  background-color: #111b2e !important;
+  color: #e2e8f0 !important;
+  border-color: #24344d !important;
+}
+
+html.a11y-dark .bg-slate-50:not(.print-area):not(.print-area *),
+html.a11y-dark .bg-slate-100:not(.print-area):not(.print-area *) {
+  background-color: #162238 !important;
+  color: #e2e8f0 !important;
+  border-color: #2a3c58 !important;
+}
+
+html.a11y-dark h1:not(.print-area *),
+html.a11y-dark h2:not(.print-area *),
+html.a11y-dark h3:not(.print-area *),
+html.a11y-dark h4:not(.print-area *),
+html.a11y-dark .text-slate-900:not(.print-area *),
+html.a11y-dark .text-slate-950:not(.print-area *),
+html.a11y-dark .text-slate-800:not(.print-area *) {
+  color: #f8fafc !important;
+}
+
+html.a11y-dark .text-slate-600:not(.print-area *),
+html.a11y-dark .text-slate-500:not(.print-area *) {
+  color: #cbd5e1 !important;
+}
+
+html.a11y-dark .inp {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.a11y-dark .btn-o {
+  background-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  border-color: #475569 !important;
+}
+
+/* Mode Kontras Tinggi (High Contrast) */
+html.a11y-contrast body {
+  background-color: #000000 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+html.a11y-contrast .card,
+html.a11y-contrast .bg-white:not(.print-area):not(.print-area *),
+html.a11y-contrast .bg-slate-50:not(.print-area):not(.print-area *),
+html.a11y-contrast .bg-slate-100:not(.print-area):not(.print-area *) {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #facc15 !important;
+}
+
+html.a11y-contrast h1,
+html.a11y-contrast h2,
+html.a11y-contrast h3,
+html.a11y-contrast h4,
+html.a11y-contrast p,
+html.a11y-contrast span,
+html.a11y-contrast label,
+html.a11y-contrast td,
+html.a11y-contrast th {
+  color: #ffffff !important;
+}
+
+html.a11y-contrast a {
+  color: #fde047 !important;
+  text-decoration: underline !important;
+}
+
+html.a11y-contrast .inp {
+  background-color: #000000 !important;
+  color: #fde047 !important;
+  border: 2px solid #fde047 !important;
+}
