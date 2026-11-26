@@ -121,3 +121,30 @@ test('POST /api/auth/reset-password-warga verifies NIK+KK+Tanggal Lahir without 
   });
   assert.equal(ok.status, 200);
 });
+
+test('2-step warga reset: verify-warga-identity then reset-password-warga with reset_token', async () => {
+  const step1 = await fetch(`${baseUrl}/api/auth/verify-warga-identity`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nik: '3201010101900001',
+      no_kk: '3201010101900002',
+      tanggal_lahir: '1990-01-01',
+    }),
+  });
+  assert.equal(step1.status, 200);
+  const s1Data = await step1.json();
+  assert.equal(s1Data.verified, true);
+  assert.ok(s1Data.reset_token);
+
+  const step2 = await fetch(`${baseUrl}/api/auth/reset-password-warga`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nik: '3201010101900001',
+      reset_token: s1Data.reset_token,
+      new_password: 'Password123',
+    }),
+  });
+  assert.equal(step2.status, 200);
+});

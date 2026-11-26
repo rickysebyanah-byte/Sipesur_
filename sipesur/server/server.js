@@ -623,24 +623,22 @@ app.post(
 );
 
 /**
- * Reset Password Warga Tanpa Email/SMTP:
- * Verifikasi langsung menggunakan NIK (16 digit) + No. KK (16 digit) + Tanggal Lahir.
+ * Langkah 1 Reset Password Warga Tanpa SMTP:
+ * Verifikasi NIK + No. KK + Tanggal Lahir terlebih dahulu, lalu terbitkan reset_token sementara.
  */
 app.post(
-  '/api/auth/reset-password-warga',
+  '/api/auth/verify-warga-identity',
   loginLimit,
   ah(async (req, res) => {
     const nik = String(req.body?.nik || '').trim();
     const noKk = String(req.body?.no_kk || '').trim();
     const tglLahir = String(req.body?.tanggal_lahir || '').trim().slice(0, 10);
-    const newPassword = String(req.body?.new_password || '');
 
     if (!/^\d{16}$/.test(nik) || !/^\d{16}$/.test(noKk) || !tglLahir) {
       throw fail(400, 'NIK (16 digit), Nomor KK (16 digit), dan Tanggal Lahir wajib diisi dengan benar.');
     }
-    if (newPassword.length < 6) {
-      throw fail(400, 'Kata sandi baru minimal 6 karakter.');
-    }
+
+    await ensureResetColumns();
 
     const [u] = await q(
       `SELECT u.*, w.nik, w.no_kk, w.tanggal_lahir
@@ -659,12 +657,71 @@ app.post(
       throw fail(400, 'Verifikasi gagal: Nomor KK atau Tanggal Lahir tidak sesuai dengan data kependudukan.');
     }
 
+    const token = crypto.randomBytes(12).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    await q('UPDATE users SET reset_token=?, reset_expires_at=? WHERE id=?', [token, expiresAt, u.id]);
+
+    res.json({
+      verified: true,
+      nama: u.nama,
+      reset_token: token,
+      message: 'Identitas kependudukan terverifikasi! Silakan buat kata sandi baru.',
+    });
+  })
+);
+
+/**
+ * Langkah 2 Reset Password Warga Tanpa Email/SMTP:
+ * Menerima reset_token (dari langkah 1) ATAU kombinasi NIK + No. KK + Tanggal Lahir.
+ */
+app.post(
+  '/api/auth/reset-password-warga',
+  loginLimit,
+  ah(async (req, res) => {
+    const nik = String(req.body?.nik || '').trim();
+    const noKk = String(req.body?.no_kk || '').trim();
+    const tglLahir = String(req.body?.tanggal_lahir || '').trim().slice(0, 10);
+    const resetToken = String(req.body?.reset_token || '').trim();
+    const newPassword = String(req.body?.new_password || '');
+
+    if (!/^\d{16}$/.test(nik)) {
+      throw fail(400, 'NIK (16 digit) wajib diisi dengan benar.');
+    }
+    if (newPassword.length < 6) {
+      throw fail(400, 'Kata sandi baru minimal 6 karakter.');
+    }
+
+    await ensureResetColumns();
+
+    const [u] = await q(
+      `SELECT u.*, w.nik, w.no_kk, w.tanggal_lahir
+       FROM users u
+       LEFT JOIN warga w ON w.user_id = u.id
+       WHERE u.email = ? OR u.username = ? OR u.nip = ? OR w.nik = ?`,
+      [nik, nik, nik, nik]
+    );
+
+    if (!u || u.role !== 'warga' || !u.aktif) {
+      throw fail(404, 'Data warga dengan NIK tersebut tidak ditemukan atau akun sedang nonaktif.');
+    }
+
+    if (resetToken) {
+      if (u.reset_token !== resetToken || !u.reset_expires_at || new Date(u.reset_expires_at).getTime() < Date.now()) {
+        throw fail(400, 'Sesi verifikasi sudah kedaluwarsa. Silakan verifikasi ulang NIK & KK Anda.');
+      }
+    } else {
+      const dbTgl = u.tanggal_lahir ? String(u.tanggal_lahir).slice(0, 10) : '';
+      if (!/^\d{16}$/.test(noKk) || !tglLahir || String(u.no_kk || '').trim() !== noKk || dbTgl !== tglLahir) {
+        throw fail(400, 'Verifikasi gagal: Nomor KK atau Tanggal Lahir tidak sesuai dengan data kependudukan.');
+      }
+    }
+
     const hashed = await bcrypt.hash(newPassword, 10);
     await q('UPDATE users SET password=?, reset_token=NULL, reset_expires_at=NULL WHERE id=?', [hashed, u.id]);
     req.user = u;
     await log(req, 'RESET_PASSWORD_NIK', `user_id=${u.id}`);
 
-    res.json({ message: 'Identitas terverifikasi! Kata sandi baru Anda berhasil disimpan, silakan login.' });
+    res.json({ message: 'Kata sandi baru Anda berhasil disimpan! Silakan login.' });
   })
 );
 

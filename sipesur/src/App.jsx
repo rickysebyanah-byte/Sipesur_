@@ -1963,6 +1963,9 @@ function Verifikasi() {
 function LupaPassword() {
   const nav = useNavigate();
   const [mode, setMode] = useState('warga'); // 'warga' (NIK+KK+TglLahir) | 'otp' (Email SMTP)
+  const [wargaStep, setWargaStep] = useState(1); // 1: Verifikasi NIK+KK+TglLahir, 2: Buat Password Baru
+  const [wargaVerifiedName, setWargaVerifiedName] = useState('');
+  const [wargaResetToken, setWargaResetToken] = useState('');
   const [step, setStep] = useState(1);
   const [identifier, setIdentifier] = useState('');
   const [token, setToken] = useState('');
@@ -1975,6 +1978,28 @@ function LupaPassword() {
   const [m, setM] = useState(null);
   const [devOtp, setDevOtp] = useState(null);
 
+  const verifyWargaIdentity = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setM(null);
+    try {
+      const { data } = await api.post('/auth/verify-warga-identity', {
+        nik,
+        no_kk: noKk,
+        tanggal_lahir: tglLahir,
+      });
+      setWargaVerifiedName(data.nama || 'Warga');
+      setWargaResetToken(data.reset_token);
+      setNewPassword('');
+      setConfirmPassword('');
+      setWargaStep(2);
+    } catch (err) {
+      setM({ t: em(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const submitWargaReset = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
@@ -1986,8 +2011,7 @@ function LupaPassword() {
     try {
       const { data } = await api.post('/auth/reset-password-warga', {
         nik,
-        no_kk: noKk,
-        tanggal_lahir: tglLahir,
+        reset_token: wargaResetToken,
         new_password: newPassword,
       });
       setM({ ok: 1, t: data.message });
@@ -2064,72 +2088,98 @@ function LupaPassword() {
       </div>
 
       {mode === 'warga' ? (
-        <form onSubmit={submitWargaReset} className="space-y-4">
-          <div className="rounded-xl bg-sky-50 border border-sky-200 p-3 text-xs text-sky-900 leading-relaxed">
-            <strong>Reset Cepat Warga:</strong> Cocokkan <b>NIK</b>, <b>Nomor KK</b>, dan <b>Tanggal Lahir</b> Anda yang terdaftar untuk langsung membuat kata sandi baru tanpa perlu email OTP.
-          </div>
-          <Field l="NIK (16 Digit)" req>
-            <input
-              className="inp font-mono"
-              placeholder="Contoh: 3201010101900001"
-              maxLength={16}
-              required
-              value={nik}
-              onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))}
-            />
-          </Field>
-          <Field l="Nomor Kartu Keluarga / KK (16 Digit)" req>
-            <input
-              className="inp font-mono"
-              placeholder="16 digit Nomor KK"
-              maxLength={16}
-              required
-              value={noKk}
-              onChange={(e) => setNoKk(e.target.value.replace(/\D/g, ''))}
-            />
-          </Field>
-          <Field l="Tanggal Lahir" req>
-            <input
-              className="inp"
-              type="date"
-              required
-              value={tglLahir}
-              onChange={(e) => setTglLahir(e.target.value)}
-            />
-          </Field>
-          <Field l="Kata Sandi Baru (Minimal 6 karakter)" req>
-            <input
-              className="inp"
-              type="password"
-              minLength={6}
-              required
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </Field>
-          <Field l="Konfirmasi Kata Sandi Baru" req>
-            <input
-              className="inp"
-              type="password"
-              minLength={6}
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-          </Field>
-          <Msg m={m} />
-          <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
-            {loading ? 'Memverifikasi identitas…' : 'Verifikasi & Simpan Kata Sandi Baru'}
-          </button>
-          <div className="text-center text-xs pt-1 text-slate-500">
-            Petugas / Lurah lupa password? Hubungi <b>Admin IT Kelurahan</b>.
-          </div>
-          <div className="text-center text-xs">
-            <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
-              ← Kembali ke Halaman Login
-            </Link>
-          </div>
-        </form>
+        wargaStep === 1 ? (
+          <form onSubmit={verifyWargaIdentity} className="space-y-4">
+            <div className="rounded-xl bg-sky-50 border border-sky-200 p-3 text-xs text-sky-900 leading-relaxed">
+              <strong>Langkah 1 dari 2 — Verifikasi Identitas:</strong> Masukkan <b>NIK</b>, <b>Nomor KK</b>, dan <b>Tanggal Lahir</b> Anda untuk memastikan kepemilikan akun.
+            </div>
+            <Field l="NIK (16 Digit)" req>
+              <input
+                className="inp font-mono"
+                placeholder="Contoh: 3201010101900001"
+                maxLength={16}
+                required
+                value={nik}
+                onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))}
+              />
+            </Field>
+            <Field l="Nomor Kartu Keluarga / KK (16 Digit)" req>
+              <input
+                className="inp font-mono"
+                placeholder="16 digit Nomor KK"
+                maxLength={16}
+                required
+                value={noKk}
+                onChange={(e) => setNoKk(e.target.value.replace(/\D/g, ''))}
+              />
+            </Field>
+            <Field l="Tanggal Lahir" req>
+              <input
+                className="inp"
+                type="date"
+                required
+                value={tglLahir}
+                onChange={(e) => setTglLahir(e.target.value)}
+              />
+            </Field>
+            <Msg m={m} />
+            <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
+              {loading ? 'Memverifikasi data…' : 'Verifikasi Identitas →'}
+            </button>
+            <div className="text-center text-xs pt-1 text-slate-500">
+              Petugas / Lurah lupa password? Hubungi <b>Admin IT Kelurahan</b>.
+            </div>
+            <div className="text-center text-xs">
+              <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
+                ← Kembali ke Halaman Login
+              </Link>
+            </div>
+          </form>
+        ) : (
+          <form onSubmit={submitWargaReset} className="space-y-4">
+            <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs text-emerald-900 leading-relaxed">
+              <strong>✅ Identitas Terverifikasi!</strong> Akun atas nama <b>{wargaVerifiedName}</b>. Silakan buat kata sandi baru Anda di bawah ini.
+            </div>
+            <Field l="Kata Sandi Baru (Minimal 6 karakter)" req>
+              <input
+                className="inp"
+                type="password"
+                minLength={6}
+                required
+                placeholder="Masukkan kata sandi baru"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </Field>
+            <Field l="Konfirmasi Kata Sandi Baru" req>
+              <input
+                className="inp"
+                type="password"
+                minLength={6}
+                required
+                placeholder="Ulangi kata sandi baru"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </Field>
+            <Msg m={m} />
+            <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
+              {loading ? 'Menyimpan kata sandi…' : 'Simpan Kata Sandi Baru'}
+            </button>
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => { setWargaStep(1); setM(null); }}
+                className="text-slate-500 hover:underline"
+              >
+                ← Ubah NIK / KK
+              </button>
+              <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
+                Ke Halaman Login
+              </Link>
+            </div>
+          </form>
+        )
       ) : step === 1 ? (
         <form onSubmit={requestReset} className="space-y-4">
           <Field l="NIK / NIP / Username / Email" req>
