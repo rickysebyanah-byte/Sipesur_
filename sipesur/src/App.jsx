@@ -1962,14 +1962,42 @@ function Verifikasi() {
 
 function LupaPassword() {
   const nav = useNavigate();
+  const [mode, setMode] = useState('warga'); // 'warga' (NIK+KK+TglLahir) | 'otp' (Email SMTP)
   const [step, setStep] = useState(1);
   const [identifier, setIdentifier] = useState('');
   const [token, setToken] = useState('');
+  const [nik, setNik] = useState('');
+  const [noKk, setNoKk] = useState('');
+  const [tglLahir, setTglLahir] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [m, setM] = useState(null);
   const [devOtp, setDevOtp] = useState(null);
+
+  const submitWargaReset = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setM({ t: 'Konfirmasi kata sandi tidak cocok.' });
+      return;
+    }
+    setLoading(true);
+    setM(null);
+    try {
+      const { data } = await api.post('/auth/reset-password-warga', {
+        nik,
+        no_kk: noKk,
+        tanggal_lahir: tglLahir,
+        new_password: newPassword,
+      });
+      setM({ ok: 1, t: data.message });
+      setTimeout(() => nav('/login'), 1800);
+    } catch (err) {
+      setM({ t: em(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const requestReset = async (e) => {
     e.preventDefault();
@@ -2013,7 +2041,96 @@ function LupaPassword() {
 
   return (
     <Center title="Reset Kata Sandi" subtitle="Pulihkan akses akun SIPESUR Anda">
-      {step === 1 ? (
+      {/* Pilihan Metode Reset */}
+      <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 mb-5">
+        <button
+          type="button"
+          onClick={() => { setMode('warga'); setM(null); }}
+          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            mode === 'warga' ? 'bg-[#1a3a5c] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          🪪 Verifikasi NIK &amp; KK
+        </button>
+        <button
+          type="button"
+          onClick={() => { setMode('otp'); setStep(1); setM(null); }}
+          className={`py-2 px-3 rounded-lg text-xs font-bold transition-all ${
+            mode === 'otp' ? 'bg-[#1a3a5c] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+          }`}
+        >
+          ✉️ Kode OTP Email
+        </button>
+      </div>
+
+      {mode === 'warga' ? (
+        <form onSubmit={submitWargaReset} className="space-y-4">
+          <div className="rounded-xl bg-sky-50 border border-sky-200 p-3 text-xs text-sky-900 leading-relaxed">
+            <strong>Reset Cepat Warga:</strong> Cocokkan <b>NIK</b>, <b>Nomor KK</b>, dan <b>Tanggal Lahir</b> Anda yang terdaftar untuk langsung membuat kata sandi baru tanpa perlu email OTP.
+          </div>
+          <Field l="NIK (16 Digit)" req>
+            <input
+              className="inp font-mono"
+              placeholder="Contoh: 3201010101900001"
+              maxLength={16}
+              required
+              value={nik}
+              onChange={(e) => setNik(e.target.value.replace(/\D/g, ''))}
+            />
+          </Field>
+          <Field l="Nomor Kartu Keluarga / KK (16 Digit)" req>
+            <input
+              className="inp font-mono"
+              placeholder="16 digit Nomor KK"
+              maxLength={16}
+              required
+              value={noKk}
+              onChange={(e) => setNoKk(e.target.value.replace(/\D/g, ''))}
+            />
+          </Field>
+          <Field l="Tanggal Lahir" req>
+            <input
+              className="inp"
+              type="date"
+              required
+              value={tglLahir}
+              onChange={(e) => setTglLahir(e.target.value)}
+            />
+          </Field>
+          <Field l="Kata Sandi Baru (Minimal 6 karakter)" req>
+            <input
+              className="inp"
+              type="password"
+              minLength={6}
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </Field>
+          <Field l="Konfirmasi Kata Sandi Baru" req>
+            <input
+              className="inp"
+              type="password"
+              minLength={6}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Field>
+          <Msg m={m} />
+          <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
+            {loading ? 'Memverifikasi identitas…' : 'Verifikasi & Simpan Kata Sandi Baru'}
+          </button>
+          <div className="text-center text-xs pt-1 text-slate-500">
+            Petugas / Lurah lupa password? Hubungi <b>Admin IT Kelurahan</b>.
+          </div>
+          <div className="text-center text-xs">
+            <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
+              ← Kembali ke Halaman Login
+            </Link>
+          </div>
+        </form>
+      ) : step === 1 ? (
         <form onSubmit={requestReset} className="space-y-4">
           <Field l="NIK / NIP / Username / Email" req>
             <input
@@ -5897,6 +6014,8 @@ function Pengguna() {
   });
   const [m, setM] = useState();
   const [konfirmHapus, setKonfirmHapus] = useState(null); // id pengguna yang akan dihapus
+  const [resetTarget, setResetTarget] = useState(null); // { id, nama } untuk reset pw oleh admin
+  const [resetPwBaru, setResetPwBaru] = useState('');
 
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
@@ -5995,6 +6114,51 @@ function Pengguna() {
         </form>
       </Card>
 
+      {/* Modal reset password oleh Admin IT */}
+      {resetTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4" onClick={() => setResetTarget(null)}>
+          <form
+            className="bg-white rounded-2xl shadow-xl border-2 border-[#1a3a5c]/20 p-6 max-w-sm w-full space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              try {
+                const { data } = await api.post(`/admin/users/${resetTarget.id}/reset-password`, {
+                  password_baru: resetPwBaru,
+                });
+                setM({ ok: 1, t: data.message });
+                setResetTarget(null);
+                setResetPwBaru('');
+              } catch (err) {
+                setM({ t: em(err) });
+              }
+            }}
+          >
+            <div className="space-y-1">
+              <h3 className="font-bold text-[#1a3a5c] text-lg">🔑 Reset Kata Sandi</h3>
+              <p className="text-xs text-slate-600">
+                Tetapkan kata sandi baru untuk akun <strong>{resetTarget.nama}</strong>:
+              </p>
+            </div>
+            <Field l="Kata Sandi Baru (Min. 6 Karakter)" req>
+              <input
+                className="inp"
+                type="text"
+                minLength={6}
+                required
+                placeholder="Contoh: Warga2026"
+                value={resetPwBaru}
+                onChange={(e) => setResetPwBaru(e.target.value)}
+              />
+            </Field>
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setResetTarget(null)} className="btn btn-o flex-1 font-semibold">Batal</button>
+              <button type="submit" className="btn btn-p flex-1 font-bold">Simpan Password</button>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* Modal konfirmasi hapus */}
       {konfirmHapus && (() => {
         const target = (u || []).find(x => x.id === konfirmHapus);
@@ -6054,6 +6218,13 @@ function Pengguna() {
                         title={x.aktif ? 'Nonaktifkan akun ini' : 'Aktifkan kembali akun ini'}
                       >
                         {x.aktif ? 'Nonaktifkan' : 'Aktifkan'}
+                      </button>
+                      <button
+                        className="btn text-[11px] py-1 px-2.5 font-semibold text-[#1a3a5c] border border-slate-300 hover:bg-slate-100 transition-colors"
+                        onClick={() => { setResetTarget({ id: x.id, nama: x.nama }); setResetPwBaru(''); }}
+                        title="Reset password pengguna ini"
+                      >
+                        🔑 Reset PW
                       </button>
                       <button
                         className="btn text-[11px] py-1 px-2.5 font-semibold text-rose-700 border border-rose-200 hover:bg-rose-50 hover:border-rose-400 transition-colors"

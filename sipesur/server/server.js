@@ -623,6 +623,52 @@ app.post(
 );
 
 /**
+ * Reset Password Warga Tanpa Email/SMTP:
+ * Verifikasi langsung menggunakan NIK (16 digit) + No. KK (16 digit) + Tanggal Lahir.
+ */
+app.post(
+  '/api/auth/reset-password-warga',
+  loginLimit,
+  ah(async (req, res) => {
+    const nik = String(req.body?.nik || '').trim();
+    const noKk = String(req.body?.no_kk || '').trim();
+    const tglLahir = String(req.body?.tanggal_lahir || '').trim().slice(0, 10);
+    const newPassword = String(req.body?.new_password || '');
+
+    if (!/^\d{16}$/.test(nik) || !/^\d{16}$/.test(noKk) || !tglLahir) {
+      throw fail(400, 'NIK (16 digit), Nomor KK (16 digit), dan Tanggal Lahir wajib diisi dengan benar.');
+    }
+    if (newPassword.length < 6) {
+      throw fail(400, 'Kata sandi baru minimal 6 karakter.');
+    }
+
+    const [u] = await q(
+      `SELECT u.*, w.nik, w.no_kk, w.tanggal_lahir
+       FROM users u
+       LEFT JOIN warga w ON w.user_id = u.id
+       WHERE u.email = ? OR u.username = ? OR u.nip = ? OR w.nik = ?`,
+      [nik, nik, nik, nik]
+    );
+
+    if (!u || u.role !== 'warga' || !u.aktif) {
+      throw fail(404, 'Data warga dengan NIK tersebut tidak ditemukan atau akun sedang nonaktif.');
+    }
+
+    const dbTgl = u.tanggal_lahir ? String(u.tanggal_lahir).slice(0, 10) : '';
+    if (String(u.no_kk || '').trim() !== noKk || dbTgl !== tglLahir) {
+      throw fail(400, 'Verifikasi gagal: Nomor KK atau Tanggal Lahir tidak sesuai dengan data kependudukan.');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await q('UPDATE users SET password=?, reset_token=NULL, reset_expires_at=NULL WHERE id=?', [hashed, u.id]);
+    req.user = u;
+    await log(req, 'RESET_PASSWORD_NIK', `user_id=${u.id}`);
+
+    res.json({ message: 'Identitas terverifikasi! Kata sandi baru Anda berhasil disimpan, silakan login.' });
+  })
+);
+
+/**
  * Ganti Password (Wajib untuk Akun Pemerintahan saat login perdana, atau warga mengubah password mandiri)
  */
 app.post(
@@ -1330,6 +1376,26 @@ app.patch(
     await q('UPDATE users SET aktif=1-aktif WHERE id=?', [req.params.id]);
     await log(req, 'TOGGLE_USER', req.params.id);
     res.json({ message: 'Status keaktifan akun berhasil diubah.' });
+  })
+);
+
+app.post(
+  '/api/admin/users/:id/reset-password',
+  auth,
+  role('admin'),
+  ah(async (req, res) => {
+    const id = +req.params.id;
+    const newPassword = String(req.body?.password_baru || '').trim();
+    if (newPassword.length < 6) {
+      throw fail(400, 'Password baru minimal 6 karakter.');
+    }
+    const [target] = await q('SELECT id, nama, role FROM users WHERE id=?', [id]);
+    if (!target) throw fail(404, 'Akun pengguna tidak ditemukan.');
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await q('UPDATE users SET password=?, reset_token=NULL, reset_expires_at=NULL WHERE id=?', [hashed, id]);
+    await log(req, 'ADMIN_RESET_PASSWORD', `target_id=${id}`);
+    res.json({ message: `Kata sandi akun ${target.nama} berhasil direset.` });
   })
 );
 

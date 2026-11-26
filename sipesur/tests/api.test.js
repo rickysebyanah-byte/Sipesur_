@@ -95,3 +95,29 @@ test('buatPdf generates a valid PDF file with QR verification box', async () => 
   assert.ok(bytes.subarray(0, 5).toString() === '%PDF-');
   fs.unlinkSync(outFile);
 });
+
+test('POST /api/auth/reset-password-warga verifies NIK+KK+Tanggal Lahir without SMTP', async () => {
+  const bad = await fetch(`${baseUrl}/api/auth/reset-password-warga`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nik: '3201010101900001',
+      no_kk: '0000000000000000',
+      tanggal_lahir: '1990-01-01',
+      new_password: 'NewPassword123',
+    }),
+  });
+  assert.equal(bad.status, 400);
+
+  const ok = await fetch(`${baseUrl}/api/auth/reset-password-warga`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      nik: '3201010101900001',
+      no_kk: '3201010101900002',
+      tanggal_lahir: '1990-01-01',
+      new_password: 'Password123',
+    }),
+  });
+  assert.equal(ok.status, 200);
+});
