@@ -394,7 +394,9 @@ function Landing() {
       customHeroBgs = [];
     }
   }
-  const heroSlides = customHeroBgs.length > 0 ? customHeroBgs : HERO_BACKGROUNDS;
+  const heroGalleryUrls = (galeriData || []).filter((g) => g?.url_foto).map((g) => g.url_foto);
+  const combinedHeroSlides = [...customHeroBgs, ...heroGalleryUrls];
+  const heroSlides = combinedHeroSlides.length > 0 ? combinedHeroSlides : HERO_BACKGROUNDS;
 
   useEffect(() => {
     if (heroSlides.length <= 1) return undefined;
