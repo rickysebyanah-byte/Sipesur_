@@ -6,6 +6,7 @@ const ModalCetakSurat = lazy(() => import('./components/ModalCetakSurat'));
 const ProfilDesa = lazy(() => import('./components/ProfilDesa'));
 const ModalPersetujuanLurah = lazy(() => import('./components/ModalPersetujuanLurah'));
 const AccessibilityPanel = lazy(() => import('./components/AccessibilityPanel'));
+const PetaKelurahan = lazy(() => import('./components/PetaKelurahan'));
 
 const Ctx = createContext();
 const useAuth = () => useContext(Ctx);
@@ -111,6 +112,7 @@ const MENU = {
     ['/app/ajukan', 'Ajukan Surat'],
     ['/app/pengajuan', 'Pengajuan Saya'],
     ['/app/surat', 'Surat Saya'],
+    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/profil', 'Profil Saya'],
   ],
   petugas: [
@@ -120,6 +122,7 @@ const MENU = {
     ['/app/surat-masuk', 'Surat Masuk'],
     ['/app/surat-keluar', 'Surat Keluar'],
     ['/app/arsip', 'Arsip Surat'],
+    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/berita', 'Berita & Info'],
     ['/app/galeri', 'Galeri Dokumentasi'],
   ],
@@ -130,6 +133,7 @@ const MENU = {
     ['/app/surat-keluar', 'Surat Keluar'],
     ['/app/arsip', 'Arsip Surat'],
     ['/app/anggaran', 'Anggaran'],
+    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/profil', 'Profil & TTE'],
   ],
   admin: [
@@ -137,6 +141,7 @@ const MENU = {
     ['/app/pengguna', 'Pengguna & Peran'],
     ['/app/jenis', 'Master Jenis Surat'],
     ['/app/profil-desa', 'Konfigurasi Portal'],
+    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/galeri', 'Galeri Dokumentasi'],
     ['/app/log', 'Log Aktivitas'],
     ['/app/profil', 'Profil Admin'],
@@ -490,6 +495,7 @@ function Landing() {
     { id: 'umkm', label: '🏪 UMKM' },
     { id: 'anggaran', label: '💰 Anggaran' },
     { id: 'kontak', label: '📞 Kontak' },
+    { id: 'peta-link', label: '🗺️ Peta', href: '/peta' },
   ];
 
   const scrollTo = (id) => {
@@ -549,18 +555,26 @@ function Landing() {
           {/* Menu Navigasi Desktop */}
           <nav className="hidden sm:flex items-center gap-1 py-1">
             {NAV.map((n) => (
-              <button
-                key={n.id}
-                type="button"
-                onClick={() => scrollTo(n.id)}
-                className={`px-3 py-2 text-xs font-semibold rounded-md transition-all ${
-                  activeSection === n.id
-                    ? 'bg-[#1a3a5c] text-white'
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a3a5c]'
-                }`}
-              >
-                {n.label}
-              </button>
+              n.href
+                ? <Link
+                    key={n.id}
+                    to={n.href}
+                    className="px-3 py-2 text-xs font-semibold rounded-md transition-all text-slate-600 hover:bg-slate-100 hover:text-[#1a3a5c]"
+                  >
+                    {n.label}
+                  </Link>
+                : <button
+                    key={n.id}
+                    type="button"
+                    onClick={() => scrollTo(n.id)}
+                    className={`px-3 py-2 text-xs font-semibold rounded-md transition-all ${
+                      activeSection === n.id
+                        ? 'bg-[#1a3a5c] text-white'
+                        : 'text-slate-600 hover:bg-slate-100 hover:text-[#1a3a5c]'
+                    }`}
+                  >
+                    {n.label}
+                  </button>
             ))}
           </nav>
 
@@ -568,14 +582,23 @@ function Landing() {
           {navOpen && (
             <div className="sm:hidden py-2 border-t border-slate-100 flex flex-col gap-1">
               {NAV.map((n) => (
-                <button
-                  key={n.id}
-                  type="button"
-                  onClick={() => scrollTo(n.id)}
-                  className="text-left px-3 py-2.5 text-sm font-semibold rounded-md text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  {n.label}
-                </button>
+                n.href
+                  ? <Link
+                      key={n.id}
+                      to={n.href}
+                      onClick={() => setNavOpen(false)}
+                      className="text-left px-3 py-2.5 text-sm font-semibold rounded-md text-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                      {n.label}
+                    </Link>
+                  : <button
+                      key={n.id}
+                      type="button"
+                      onClick={() => scrollTo(n.id)}
+                      className="text-left px-3 py-2.5 text-sm font-semibold rounded-md text-slate-700 hover:bg-slate-100 transition-colors"
+                    >
+                      {n.label}
+                    </button>
               ))}
               <div className="border-t border-slate-200 mt-1 pt-2 flex gap-2">
                 <Link to="/login" className="flex-1 btn btn-o text-xs py-2 text-center">Masuk</Link>
@@ -8099,6 +8122,45 @@ function TransparansiAnggaranPublic() {
   );
 }
 
+// ── Halaman Peta Interaktif (wrapper dalam app layout) ──────────────────────
+function PetaPage() {
+  const { user } = useAuth();
+  const canEdit = ['admin', 'petugas'].includes(user?.role);
+  const [umkm, setUmkm] = useState([]);
+
+  useEffect(() => {
+    // Muat daftar UMKM untuk pin di peta
+    api.get('/umkm').then(r => {
+      if (Array.isArray(r.data)) setUmkm(r.data);
+    }).catch(() => {});
+  }, []);
+
+  return (
+    <div>
+      <PetaKelurahan mode="app" canEdit={canEdit} umkmList={umkm} />
+    </div>
+  );
+}
+
+// ── Halaman Peta Publik (tanpa login) ───────────────────────────────────────
+function PetaPublic() {
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-[#1a3a5c] text-white py-3 px-4 text-center">
+        <p className="text-sm">🏛️ Peta Interaktif Kelurahan Suka Maju</p>
+      </div>
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <PetaKelurahan mode="public" canEdit={false} />
+        <div className="mt-4 text-center">
+          <Link to="/" className="text-sm text-[#1a3a5c] hover:underline">
+            ← Kembali ke Portal Kelurahan
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
     <Provider>
@@ -8112,6 +8174,7 @@ export default function App() {
           <Route path="/verifikasi/:kode" element={<Verifikasi />} />
           <Route path="/cek-status" element={<CekStatusPublic />} />
           <Route path="/anggaran" element={<TransparansiAnggaranPublic />} />
+          <Route path="/peta" element={<PetaPublic />} />
           <Route path="/app" element={<Guard />}>
             <Route index element={<Dashboard />} />
             <Route
@@ -8216,6 +8279,7 @@ export default function App() {
               }
             />
             <Route path="notifikasi" element={<Notifikasi />} />
+            <Route path="peta" element={<PetaPage />} />
             <Route
               path="pengguna"
               element={
