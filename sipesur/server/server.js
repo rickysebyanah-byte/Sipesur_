@@ -663,7 +663,7 @@ app.get('/api/galeri', ah(async (req, res) => {
   res.json(rows);
 }));
 
-app.post('/api/galeri', auth, role('petugas', 'lurah'), ah(async (req, res) => {
+app.post('/api/galeri', auth, role('admin', 'petugas', 'lurah'), ah(async (req, res) => {
   const { judul, deskripsi, url_foto, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul kegiatan wajib diisi');
   if (!url_foto || !url_foto.trim()) throw fail(400, 'URL/data foto wajib diisi');
@@ -674,7 +674,7 @@ app.post('/api/galeri', auth, role('petugas', 'lurah'), ah(async (req, res) => {
   res.status(201).json({ message: 'Foto kegiatan berhasil ditambahkan' });
 }));
 
-app.put('/api/galeri/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
+app.put('/api/galeri/:id', auth, role('admin', 'petugas', 'lurah'), ah(async (req, res) => {
   const { judul, deskripsi, url_foto, tanggal } = req.body;
   if (!judul || !judul.trim()) throw fail(400, 'Judul kegiatan wajib diisi');
   await q('UPDATE galeri_kegiatan SET judul=?, deskripsi=?, url_foto=?, tanggal=?, updated_at=NOW() WHERE id=?',
@@ -683,7 +683,7 @@ app.put('/api/galeri/:id', auth, role('petugas', 'lurah'), ah(async (req, res) =
   res.json({ message: 'Foto kegiatan berhasil diperbarui' });
 }));
 
-app.delete('/api/galeri/:id', auth, role('petugas', 'lurah'), ah(async (req, res) => {
+app.delete('/api/galeri/:id', auth, role('admin', 'petugas', 'lurah'), ah(async (req, res) => {
   await q('DELETE FROM galeri_kegiatan WHERE id=?', [req.params.id]);
   await log(req, 'HAPUS_GALERI', `id=${req.params.id}`);
   res.json({ message: 'Foto kegiatan berhasil dihapus' });
@@ -872,6 +872,40 @@ app.post(
     }
     await log(req, 'UPDATE_LOGO_DESA', req.file.originalname);
     res.json({ message: 'Logo kelurahan berhasil diunggah dan diterapkan ke kop surat', logo_url: base64Data });
+  })
+);
+
+app.put(
+  '/api/profil-desa/hero-backgrounds',
+  auth,
+  role('admin'),
+  ah(async (req, res) => {
+    const list = Array.isArray(req.body?.hero_bg_urls)
+      ? req.body.hero_bg_urls.filter((u) => typeof u === 'string' && u.trim()).slice(0, 8)
+      : [];
+    const serialized = list.length ? JSON.stringify(list) : null;
+
+    if (!db.isLocalMode()) {
+      try {
+        await q('ALTER TABLE profil_desa ADD COLUMN IF NOT EXISTS hero_bg_urls TEXT');
+      } catch {
+        // Ignore if column already exists or insufficient DDL permission
+      }
+    }
+
+    const rows = await q('SELECT id FROM profil_desa ORDER BY id ASC LIMIT 1');
+    if (rows.length) {
+      await q('UPDATE profil_desa SET hero_bg_urls = ?, updated_at = NOW() WHERE id = ?', [serialized, rows[0].id]);
+    } else {
+      await q('INSERT INTO profil_desa (nama_desa, hero_bg_urls) VALUES (?, ?)', ['Kelurahan Suka Maju', serialized]);
+    }
+    await log(req, 'UPDATE_HERO_BG', `${list.length} gambar background beranda`);
+    res.json({
+      message: list.length
+        ? `${list.length} gambar background halaman utama berhasil disimpan.`
+        : 'Gambar background dikembalikan ke tampilan bawaan.',
+      hero_bg_urls: serialized,
+    });
   })
 );
 

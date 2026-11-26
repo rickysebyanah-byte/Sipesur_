@@ -416,7 +416,12 @@ function executeLocalSql(sql, params = []) {
   // 2. UPDATE / INSERT profil_desa
   if (upper.startsWith('UPDATE PROFIL_DESA') || upper.startsWith('UPDATE "PROFIL_DESA"')) {
     const p = dbData.profil_desa[0] || { id: 1 };
-    if (upper.includes('SET LOGO_URL = ?') && params.length >= 1) {
+    if (upper.includes('SET HERO_BG_URLS = ?') && params.length >= 1) {
+      p.hero_bg_urls = params[0];
+      p.updated_at = new Date().toISOString();
+      dbData.profil_desa[0] = p;
+      saveLocalDb();
+    } else if (upper.includes('SET LOGO_URL = ?') && params.length >= 1) {
       p.logo_url = params[0];
       p.updated_at = new Date().toISOString();
       dbData.profil_desa[0] = p;

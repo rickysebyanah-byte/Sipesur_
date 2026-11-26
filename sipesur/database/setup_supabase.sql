@@ -167,6 +167,7 @@ CREATE TABLE profil_desa (
   email VARCHAR(100) NOT NULL DEFAULT 'kelurahan@pemkomedan.go.id',
   website VARCHAR(100) NOT NULL DEFAULT 'sukamaju.medan.go.id',
   logo_url TEXT,
+  hero_bg_urls TEXT,
   nama_lurah VARCHAR(100) NOT NULL DEFAULT 'Muhammad Iqbal Samosir, S.E., M.A.P.',
   nip_lurah VARCHAR(30) NOT NULL DEFAULT '198506122010011005',
   jabatan_lurah VARCHAR(100) NOT NULL DEFAULT 'Lurah Suka Maju',

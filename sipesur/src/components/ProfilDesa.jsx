@@ -95,6 +95,89 @@ export default function ProfilDesa({ userRole }) {
   const [msg, setMsg] = useState(null);
   const [tab, setTab] = useState('identitas');
   const [konfirmHapusLogo, setKonfirmHapusLogo] = useState(false);
+  const [heroBgUrlInput, setHeroBgUrlInput] = useState('');
+  const [savingHeroBg, setSavingHeroBg] = useState(false);
+
+  const parseHeroBgUrls = (raw) => {
+    if (Array.isArray(raw)) return raw.filter((u) => typeof u === 'string' && u.trim());
+    if (typeof raw === 'string' && raw.trim()) {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed.filter((u) => typeof u === 'string' && u.trim()) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
+  const heroBgList = parseHeroBgUrls(f?.hero_bg_urls);
+
+  const saveHeroBgList = async (nextList) => {
+    try {
+      setSavingHeroBg(true);
+      setMsg(null);
+      const res = await api.put('/profil-desa/hero-backgrounds', { hero_bg_urls: nextList });
+      const savedVal = res.data?.hero_bg_urls ?? null;
+      setF((prev) => ({ ...prev, hero_bg_urls: savedVal }));
+      setOrig((prev) => (prev ? { ...prev, hero_bg_urls: savedVal } : prev));
+      setMsg({ type: 'success', text: res.data?.message || 'Gambar background beranda berhasil diperbarui.' });
+    } catch (err) {
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Gagal menyimpan gambar background.' });
+    } finally {
+      setSavingHeroBg(false);
+    }
+  };
+
+  const resizeHeroImageDataUrl = (file) =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      const objUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        const maxW = 1400;
+        const scale = Math.min(1, maxW / (img.width || 1));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(objUrl);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        reject(new Error('Gagal membaca gambar'));
+      };
+      img.src = objUrl;
+    });
+
+  const handleUploadHeroBg = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = '';
+    if (!files.length) return;
+    if (heroBgList.length >= 8) {
+      setMsg({ type: 'warn', text: 'Maksimal 8 gambar background beranda.' });
+      return;
+    }
+    try {
+      const slots = Math.max(1, 8 - heroBgList.length);
+      const encoded = await Promise.all(files.slice(0, slots).map(resizeHeroImageDataUrl));
+      await saveHeroBgList([...heroBgList, ...encoded]);
+    } catch {
+      setMsg({ type: 'error', text: 'Gagal memproses gambar background.' });
+    }
+  };
+
+  const handleAddHeroBgUrl = async () => {
+    const trimmed = heroBgUrlInput.trim();
+    if (!trimmed) return;
+    if (heroBgList.length >= 8) {
+      setMsg({ type: 'warn', text: 'Maksimal 8 gambar background beranda.' });
+      return;
+    }
+    setHeroBgUrlInput('');
+    await saveHeroBgList([...heroBgList, trimmed]);
+  };
 
   // Role-aware: Admin IT (pengelola portal) & Lurah yang bisa edit konfigurasi identitas & kop
   const role = userRole || 'warga';
@@ -769,6 +852,85 @@ export default function ProfilDesa({ userRole }) {
           </div>
         )}
       </form>
+
+      {/* KHUSUS ADMIN IT: KELOLA GAMBAR BACKGROUND BERANDA WEBSITE */}
+      {role === 'admin' && (
+        <SectionCard
+          icon="🖼️"
+          title="Gambar Background Halaman Utama Website (Berganti Otomatis)"
+          subtitle="Khusus Admin IT — unggah atau tempel URL gambar untuk latar belakang hero portal publik (maks. 8 gambar, berganti halus setiap 6 detik)"
+        >
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+              <label className="btn btn-p py-2 px-4 text-xs font-bold cursor-pointer text-center shrink-0">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  multiple
+                  disabled={savingHeroBg}
+                  onChange={handleUploadHeroBg}
+                  className="hidden"
+                />
+                {savingHeroBg ? 'Menyimpan…' : '📤 Unggah Gambar Background'}
+              </label>
+
+              <div className="flex flex-1 gap-2">
+                <input
+                  type="url"
+                  className="inp text-xs flex-1"
+                  placeholder="Atau tempel URL gambar (https://...)"
+                  value={heroBgUrlInput}
+                  onChange={(e) => setHeroBgUrlInput(e.target.value)}
+                />
+                <button
+                  type="button"
+                  disabled={savingHeroBg || !heroBgUrlInput.trim()}
+                  onClick={handleAddHeroBgUrl}
+                  className="btn btn-o text-xs font-bold py-2 px-3.5 shrink-0"
+                >
+                  + Tambah URL
+                </button>
+              </div>
+
+              {heroBgList.length > 0 && (
+                <button
+                  type="button"
+                  disabled={savingHeroBg}
+                  onClick={() => saveHeroBgList([])}
+                  className="btn btn-o text-xs text-rose-700 border-rose-200 hover:bg-rose-50 py-2 px-3 shrink-0"
+                >
+                  ↺ Reset Bawaan
+                </button>
+              )}
+            </div>
+
+            {heroBgList.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {heroBgList.map((src, idx) => (
+                  <div key={idx} className="group relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 h-28">
+                    <img src={src} alt={`Background ${idx + 1}`} className="w-full h-full object-cover" />
+                    <span className="absolute top-1.5 left-1.5 rounded bg-slate-900/75 px-2 py-0.5 text-[10px] font-bold text-white">
+                      Slide {idx + 1}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={savingHeroBg}
+                      onClick={() => saveHeroBgList(heroBgList.filter((_, i) => i !== idx))}
+                      className="absolute top-1.5 right-1.5 rounded bg-rose-600 hover:bg-rose-700 px-2 py-0.5 text-[10px] font-bold text-white shadow-xs"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-xs text-slate-600 text-center">
+                Belum ada gambar kustom yang diunggah. Halaman utama saat ini menggunakan 4 latar belakang bawaan yang berganti otomatis secara halus.
+              </div>
+            )}
+          </div>
+        </SectionCard>
+      )}
     </div>
   );
 }

@@ -120,6 +120,7 @@ const MENU = {
     ['/app/surat-keluar', 'Surat Keluar'],
     ['/app/arsip', 'Arsip Surat'],
     ['/app/berita', 'Berita & Info'],
+    ['/app/galeri', 'Galeri Dokumentasi'],
   ],
   lurah: [
     ['/app', 'Beranda'],
@@ -135,6 +136,7 @@ const MENU = {
     ['/app/pengguna', 'Pengguna & Peran'],
     ['/app/jenis', 'Master Jenis Surat'],
     ['/app/profil-desa', 'Konfigurasi Portal'],
+    ['/app/galeri', 'Galeri Dokumentasi'],
     ['/app/log', 'Log Aktivitas'],
     ['/app/profil', 'Profil Admin'],
   ],
@@ -381,8 +383,18 @@ function Landing() {
   const [cekErr, setCekErr] = useState('');
   const [heroIdx, setHeroIdx] = useState(0);
 
-  const heroGalleryUrls = (galeriData || []).filter((g) => g?.url_foto).map((g) => g.url_foto);
-  const heroSlides = heroGalleryUrls.length > 0 ? [...heroGalleryUrls, ...HERO_BACKGROUNDS] : HERO_BACKGROUNDS;
+  let customHeroBgs = [];
+  if (Array.isArray(desa?.hero_bg_urls)) {
+    customHeroBgs = desa.hero_bg_urls.filter((u) => typeof u === 'string' && u.trim());
+  } else if (typeof desa?.hero_bg_urls === 'string' && desa.hero_bg_urls.trim()) {
+    try {
+      const parsed = JSON.parse(desa.hero_bg_urls);
+      if (Array.isArray(parsed)) customHeroBgs = parsed.filter((u) => typeof u === 'string' && u.trim());
+    } catch {
+      customHeroBgs = [];
+    }
+  }
+  const heroSlides = customHeroBgs.length > 0 ? customHeroBgs : HERO_BACKGROUNDS;
 
   useEffect(() => {
     if (heroSlides.length <= 1) return undefined;
@@ -5969,40 +5981,52 @@ function Jenis() {
           </p>
         </div>
 
-        <form
-          className="grid gap-3 border-2 border-dashed border-brand-200 p-4 rounded-xl bg-brand-50/30"
-          onSubmit={(e) => {
-            e.preventDefault();
-            call(async () => {
-              await api.post('/admin/jenis-surat', f);
-              setF({ kode: '', nama: '', template: '', fields: '' });
-              setM({ ok: 1, t: 'Jenis surat baru berhasil ditambahkan.' });
-            });
-          }}
-        >
-          <div className="text-xs font-bold text-brand-900 flex items-center gap-2">➕ Tambah Jenis Surat Baru</div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <input className="inp text-xs" placeholder="Kode Surat (misal: SKD)" required value={f.kode} onChange={(e) => setF({ ...f, kode: e.target.value })} />
-            <input className="inp text-xs" placeholder="Nama Surat (misal: Surat Keterangan Domisili)" required value={f.nama} onChange={(e) => setF({ ...f, nama: e.target.value })} />
+        <div className="grid gap-4 lg:grid-cols-12 items-start">
+          <form
+            className="lg:col-span-6 grid gap-3 border-2 border-dashed border-brand-200 p-4 rounded-xl bg-brand-50/30"
+            onSubmit={(e) => {
+              e.preventDefault();
+              call(async () => {
+                await api.post('/admin/jenis-surat', f);
+                setF({ kode: '', nama: '', template: '', fields: '' });
+                setM({ ok: 1, t: 'Jenis surat baru berhasil ditambahkan.' });
+              });
+            }}
+          >
+            <div className="text-xs font-bold text-brand-900 flex items-center gap-2">➕ Tambah Jenis Surat Baru</div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <input className="inp text-xs" placeholder="Kode Surat (misal: SKD)" required value={f.kode} onChange={(e) => setF({ ...f, kode: e.target.value })} />
+              <input className="inp text-xs" placeholder="Nama Surat (misal: Surat Keterangan Domisili)" required value={f.nama} onChange={(e) => setF({ ...f, nama: e.target.value })} />
+            </div>
+            <textarea
+              className="inp text-xs"
+              rows={4}
+              placeholder="Template klausul naskah surat (contoh: adalah benar warga yang bertempat tinggal di wilayah Kelurahan Suka Maju...)"
+              value={f.template}
+              onChange={(e) => setF({ ...f, template: e.target.value })}
+            />
+            <input
+              className="inp text-xs"
+              placeholder="Field formulir tambahan (format: key:Label|key2:Label2, misal: keperluan:Keperluan Surat|nama_usaha:Nama Usaha)"
+              required
+              value={f.fields}
+              onChange={(e) => setF({ ...f, fields: e.target.value })}
+            />
+            <div>
+              <button className="btn btn-p text-xs font-bold py-2 px-4">Tambah Master Jenis Surat</button>
+            </div>
+          </form>
+
+          <div className="lg:col-span-6">
+            <LiveTemplatePdfPreview
+              desa={desa}
+              jenisNama={f.nama}
+              jenisKode={f.kode}
+              templateText={f.template}
+              fieldsStr={f.fields}
+            />
           </div>
-          <textarea
-            className="inp text-xs"
-            rows={2}
-            placeholder="Template klausul naskah surat (contoh: adalah benar warga yang bertempat tinggal di wilayah Kelurahan Suka Maju...)"
-            value={f.template}
-            onChange={(e) => setF({ ...f, template: e.target.value })}
-          />
-          <input
-            className="inp text-xs"
-            placeholder="Field formulir tambahan (format: key:Label|key2:Label2, misal: keperluan:Keperluan Surat|nama_usaha:Nama Usaha)"
-            required
-            value={f.fields}
-            onChange={(e) => setF({ ...f, fields: e.target.value })}
-          />
-          <div>
-            <button className="btn btn-p text-xs font-bold py-2 px-4">Tambah Master Jenis Surat</button>
-          </div>
-        </form>
+        </div>
 
         <div className="mt-3">
           <Msg m={m} />
@@ -6010,17 +6034,8 @@ function Jenis() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {(js || []).map((j) => {
-          const isEditingThis = editTplId === j.id;
-          const isPreviewingThis = previewPdfId === j.id;
-          const showLivePdf = isEditingThis || isPreviewingThis;
-          const fieldsForPreview = Array.isArray(j.form_fields)
-            ? j.form_fields.map((x) => `${x.name || ''}:${x.label || ''}`).join('|')
-            : '';
-
-          return (
-          <div key={j.id} className={showLivePdf ? 'sm:col-span-2' : ''}>
-          <Card title={
+        {(js || []).map((j) => (
+          <Card key={j.id} title={
             <span className="flex items-center gap-2">
               <span className={`badge text-[11px] ${j.aktif ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                 {j.aktif ? 'Aktif' : 'Nonaktif'}
@@ -6029,13 +6044,6 @@ function Jenis() {
             </span>
           } rightAction={
             <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                className={`btn text-[11px] py-1 px-2.5 font-semibold ${isPreviewingThis && !isEditingThis ? 'bg-cyan-700 text-white' : 'btn-o text-cyan-800 border-cyan-200 hover:bg-cyan-50'}`}
-                onClick={() => setPreviewPdfId(isPreviewingThis ? null : j.id)}
-              >
-                {isPreviewingThis && !isEditingThis ? 'Tutup Live PDF' : '👁️ Live PDF'}
-              </button>
               <button
                 className={`btn text-[11px] py-1 px-2.5 font-semibold ${j.aktif ? 'btn-o text-slate-700' : 'btn-success'}`}
                 onClick={() => call(() => api.patch(`/admin/jenis-surat/${j.id}/aktif`))}
@@ -6051,120 +6059,99 @@ function Jenis() {
               </button>
             </div>
           }>
-            <div className={showLivePdf ? 'grid gap-4 lg:grid-cols-12 items-start' : ''}>
-              <div className={showLivePdf ? 'lg:col-span-5' : ''}>
-                {/* Box Klausul Template Naskah */}
-                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs mb-3 space-y-1.5">
-                  <div className="flex items-center justify-between text-slate-500 font-semibold text-[11px]">
-                    <span>📝 Template Naskah Surat:</span>
-                    <button
-                      type="button"
-                      className="text-brand-700 font-bold hover:underline"
-                      onClick={() => {
-                        if (isEditingThis) {
-                          setEditTplId(null);
-                        } else {
-                          setEditTplId(j.id);
-                          setTplText(j.template || '');
-                        }
-                      }}
-                    >
-                      {isEditingThis ? 'Batal Ubah' : '✏️ Ubah template'}
-                    </button>
-                  </div>
-
-                  {isEditingThis ? (
-                    <div className="pt-1.5 space-y-2">
-                      <textarea
-                        className="inp text-xs"
-                        rows={5}
-                        value={tplText}
-                        onChange={(e) => setTplText(e.target.value)}
-                        placeholder="Tuliskan klausul resmi naskah surat..."
-                      />
-                      <div className="text-[11px] text-slate-500">
-                        Ketik langsung di atas — bagian yang disorot biru di sebelah kanan akan berubah secara langsung.
-                      </div>
-                      <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
-                          className="btn btn-o text-[11px] py-1 px-2"
-                          onClick={() => setEditTplId(null)}
-                        >
-                          Batal
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-p text-[11px] py-1 px-3 font-bold"
-                          disabled={loadingTpl}
-                          onClick={() => simpanTemplate(j.id)}
-                        >
-                          {loadingTpl ? 'Menyimpan…' : 'Simpan Template'}
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <p className="text-slate-700 italic bg-white p-2 rounded border border-slate-200/70 text-[11px] leading-relaxed">
-                      &ldquo;{j.template || 'Belum diatur (menggunakan template default sistem).'}&rdquo;
-                    </p>
-                  )}
-                </div>
-
-                {/* Persyaratan Berkas */}
-                <div className="text-xs mb-2 font-semibold text-slate-600">📋 Dokumen Persyaratan:</div>
-                <ul className="mb-3 text-xs space-y-1">
-                  {(j.persyaratan || []).map((p) => (
-                    <li key={p.id} className="flex justify-between items-center border-b border-slate-100 py-1.5 group">
-                      <span className="text-slate-700">• {p.nama}</span>
-                      <button
-                        className="text-rose-600 font-semibold text-[11px] hover:underline opacity-70 group-hover:opacity-100 transition-opacity"
-                        onClick={() => call(() => api.delete('/admin/persyaratan/' + p.id))}
-                      >
-                        🗑️ Hapus
-                      </button>
-                    </li>
-                  ))}
-                  {!(j.persyaratan || []).length && (
-                    <li className="text-[11px] text-slate-400 italic py-1">Belum ada persyaratan dokumen khusus.</li>
-                  )}
-                </ul>
-                <div className="flex gap-2">
-                  <input
-                    className="inp text-xs flex-1"
-                    placeholder="Nama berkas persyaratan (contoh: KTP / KK)"
-                    value={ps[j.id] || ''}
-                    onChange={(e) => setPs({ ...ps, [j.id]: e.target.value })}
-                  />
-                  <button
-                    className="btn btn-p text-xs py-1.5 px-3 flex-shrink-0"
-                    onClick={() =>
-                      call(async () => {
-                        await api.post('/admin/persyaratan', { jenis_surat_id: j.id, nama: ps[j.id] });
-                        setPs({ ...ps, [j.id]: '' });
-                      })
+            {/* Box Klausul Template Naskah */}
+            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs mb-3 space-y-1.5">
+              <div className="flex items-center justify-between text-slate-500 font-semibold text-[11px]">
+                <span>📝 Template Naskah Surat:</span>
+                <button
+                  type="button"
+                  className="text-brand-700 font-bold hover:underline"
+                  onClick={() => {
+                    if (editTplId === j.id) {
+                      setEditTplId(null);
+                    } else {
+                      setEditTplId(j.id);
+                      setTplText(j.template || '');
                     }
-                  >
-                    + Tambah
-                  </button>
-                </div>
+                  }}
+                >
+                  {editTplId === j.id ? 'Batal Ubah' : '✏️ Ubah template'}
+                </button>
               </div>
 
-              {showLivePdf && (
-                <div className="lg:col-span-7">
-                  <LiveTemplatePdfPreview
-                    desa={desa}
-                    jenisNama={j.nama}
-                    jenisKode={j.kode}
-                    templateText={isEditingThis ? tplText : j.template}
-                    fieldsStr={fieldsForPreview}
+              {editTplId === j.id ? (
+                <div className="pt-1.5 space-y-2">
+                  <textarea
+                    className="inp text-xs"
+                    rows={3}
+                    value={tplText}
+                    onChange={(e) => setTplText(e.target.value)}
+                    placeholder="Tuliskan klausul resmi naskah surat..."
                   />
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      className="btn btn-o text-[11px] py-1 px-2"
+                      onClick={() => setEditTplId(null)}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-p text-[11px] py-1 px-3 font-bold"
+                      disabled={loadingTpl}
+                      onClick={() => simpanTemplate(j.id)}
+                    >
+                      {loadingTpl ? 'Menyimpan…' : 'Simpan Template'}
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <p className="text-slate-700 italic bg-white p-2 rounded border border-slate-200/70 text-[11px] leading-relaxed">
+                  &ldquo;{j.template || 'Belum diatur (menggunakan template default sistem).'}&rdquo;
+                </p>
               )}
             </div>
+
+            {/* Persyaratan Berkas */}
+            <div className="text-xs mb-2 font-semibold text-slate-600">📋 Dokumen Persyaratan:</div>
+            <ul className="mb-3 text-xs space-y-1">
+              {(j.persyaratan || []).map((p) => (
+                <li key={p.id} className="flex justify-between items-center border-b border-slate-100 py-1.5 group">
+                  <span className="text-slate-700">• {p.nama}</span>
+                  <button
+                    className="text-rose-600 font-semibold text-[11px] hover:underline opacity-70 group-hover:opacity-100 transition-opacity"
+                    onClick={() => call(() => api.delete('/admin/persyaratan/' + p.id))}
+                  >
+                    🗑️ Hapus
+                  </button>
+                </li>
+              ))}
+              {!(j.persyaratan || []).length && (
+                <li className="text-[11px] text-slate-400 italic py-1">Belum ada persyaratan dokumen khusus.</li>
+              )}
+            </ul>
+            <div className="flex gap-2">
+              <input
+                className="inp text-xs flex-1"
+                placeholder="Nama berkas persyaratan (contoh: KTP / KK)"
+                value={ps[j.id] || ''}
+                onChange={(e) => setPs({ ...ps, [j.id]: e.target.value })}
+              />
+              <button
+                className="btn btn-p text-xs py-1.5 px-3 flex-shrink-0"
+                onClick={() =>
+                  call(async () => {
+                    await api.post('/admin/persyaratan', { jenis_surat_id: j.id, nama: ps[j.id] });
+                    setPs({ ...ps, [j.id]: '' });
+                  })
+                }
+              >
+                + Tambah
+              </button>
+            </div>
           </Card>
-          </div>
-          );
-        })}
+        ))}
       </div>
     </div>
   );
@@ -7649,7 +7636,7 @@ export default function App() {
             <Route
               path="galeri"
               element={
-                <Only r={['petugas', 'lurah']}>
+                <Only r={['admin', 'petugas', 'lurah']}>
                   <GaleriKelurahan />
                 </Only>
               }
