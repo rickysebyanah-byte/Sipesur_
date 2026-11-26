@@ -355,6 +355,17 @@ const LAYANAN_LIST = [
   { kode: 'SPP', nama: 'Surat Keterangan Penghasilan', desc: 'Keterangan rincian penghasilan rata-rata orang tua/wali pemohon.', syarat: 'KTP, Kartu Keluarga, Bukti Usaha/Slip', tag: 'bg-blue-50 text-brand-700 border-blue-200' },
 ];
 
+const HERO_BACKGROUNDS = [
+  // 1. Siluet Kantor Pemerintahan & Pilar Klasik
+  `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f2340"/><stop offset="55%" stop-color="#1e4876"/><stop offset="100%" stop-color="#2c639e"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g1)"/><circle cx="1320" cy="180" r="240" fill="#c8a84b" opacity="0.16"/><circle cx="260" cy="720" r="300" fill="#38bdf8" opacity="0.12"/><path d="M0 720 Q400 620 800 700 T1600 660 L1600 900 L0 900 Z" fill="#0b1a30" opacity="0.55"/><g fill="#ffffff" opacity="0.10"><polygon points="800,250 1120,390 480,390"/><rect x="520" y="390" width="560" height="28"/><rect x="560" y="425" width="38" height="240"/><rect x="650" y="425" width="38" height="240"/><rect x="740" y="425" width="38" height="240"/><rect x="830" y="425" width="38" height="240"/><rect x="920" y="425" width="38" height="240"/><rect x="1002" y="425" width="38" height="240"/><rect x="500" y="665" width="600" height="35"/></g></svg>')}`,
+  // 2. Lanskap Perkotaan & Pelayanan Publik Modern
+  `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g2" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#0c2d48"/><stop offset="50%" stop-color="#145374"/><stop offset="100%" stop-color="#1e6b7b"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g2)"/><circle cx="320" cy="210" r="260" fill="#c8a84b" opacity="0.15"/><circle cx="1220" cy="650" r="320" fill="#34d399" opacity="0.10"/><g fill="#ffffff" opacity="0.09"><rect x="120" y="460" width="130" height="440" rx="6"/><rect x="280" y="360" width="170" height="540" rx="6"/><rect x="490" y="510" width="140" height="390" rx="6"/><rect x="960" y="410" width="180" height="490" rx="6"/><rect x="1170" y="310" width="190" height="590" rx="6"/><rect x="1390" y="470" width="140" height="430" rx="6"/></g><path d="M0 780 Q500 700 1000 770 T1600 730 L1600 900 L0 900 Z" fill="#071929" opacity="0.5"/></svg>')}`,
+  // 3. Nuansa Hijau Asri & Harmoni Lingkungan Kelurahan
+  `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g3" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#133b5c"/><stop offset="55%" stop-color="#1d5c63"/><stop offset="100%" stop-color="#2a7b6f"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g3)"/><circle cx="1150" cy="240" r="280" fill="#fde68a" opacity="0.14"/><path d="M0 640 C320 540 580 710 920 620 C1220 540 1420 630 1600 580 L1600 900 L0 900 Z" fill="#ffffff" opacity="0.07"/><path d="M0 730 C420 650 760 790 1160 700 C1380 650 1500 700 1600 680 L1600 900 L0 900 Z" fill="#0a2438" opacity="0.45"/></svg>')}`,
+  // 4. Gelombang Geometris Digital & Transparansi
+  `data:image/svg+xml;utf8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900"><defs><linearGradient id="g4" x1="1" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a3a5c"/><stop offset="50%" stop-color="#234e7d"/><stop offset="100%" stop-color="#0f2340"/></linearGradient></defs><rect width="1600" height="900" fill="url(#g4)"/><circle cx="800" cy="450" r="380" fill="none" stroke="#c8a84b" stroke-width="2" opacity="0.16"/><circle cx="800" cy="450" r="270" fill="none" stroke="#ffffff" stroke-width="1.5" opacity="0.10"/><circle cx="800" cy="450" r="500" fill="none" stroke="#ffffff" stroke-width="1" opacity="0.07"/><path d="M0 580 Q400 480 800 580 T1600 560 L1600 900 L0 900 Z" fill="#ffffff" opacity="0.05"/></svg>')}`,
+];
+
 function Landing() {
   const [desa] = useGet('/profil-desa');
   const [jenisSurat] = useGet('/jenis-surat');
@@ -368,6 +379,18 @@ function Landing() {
   const [cekHasil, setCekHasil] = useState(null);
   const [cekLoading, setCekLoading] = useState(false);
   const [cekErr, setCekErr] = useState('');
+  const [heroIdx, setHeroIdx] = useState(0);
+
+  const heroGalleryUrls = (galeriData || []).filter((g) => g?.url_foto).map((g) => g.url_foto);
+  const heroSlides = heroGalleryUrls.length > 0 ? [...heroGalleryUrls, ...HERO_BACKGROUNDS] : HERO_BACKGROUNDS;
+
+  useEffect(() => {
+    if (heroSlides.length <= 1) return undefined;
+    const timer = setInterval(() => {
+      setHeroIdx((prev) => (prev + 1) % heroSlides.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [heroSlides.length]);
 
   const namaDesa = desa?.nama_desa || 'Kelurahan Suka Maju';
   const pemkab = desa?.kabupaten_kota || 'Pemerintah Kota Medan';
@@ -552,8 +575,25 @@ function Landing() {
         {/* ═══════════════════════════════════════════════
             HERO SECTION
         ═══════════════════════════════════════════════ */}
-        <section id="sec-beranda" className="bg-gradient-to-br from-[#1a3a5c] via-[#1e4876] to-[#0f2340] text-white">
-          <div className="mx-auto max-w-6xl px-4 py-14 sm:py-20">
+        <section id="sec-beranda" className="relative overflow-hidden bg-[#0f2340] text-white">
+          {/* Lapisan Gambar Background Berganti Otomatis Secara Halus */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            {heroSlides.map((src, idx) => {
+              const active = idx === (heroIdx % heroSlides.length);
+              return (
+                <div
+                  key={idx}
+                  className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] ease-in-out ${
+                    active ? 'opacity-45 scale-105' : 'opacity-0 scale-100'
+                  }`}
+                  style={{ backgroundImage: `url("${src}")` }}
+                />
+              );
+            })}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0f2340]/85 via-[#1a3a5c]/75 to-[#0f2340]/85" />
+          </div>
+
+          <div className="relative z-10 mx-auto max-w-6xl px-4 py-14 sm:py-20">
             <div className="grid lg:grid-cols-[1fr_380px] gap-10 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 rounded-full bg-white/10 border border-white/20 px-3.5 py-1.5 text-xs font-semibold text-white/90 mb-5">
@@ -5731,12 +5771,129 @@ function Pengguna() {
   );
 }
 
+function LiveTemplatePdfPreview({ desa, jenisNama, jenisKode, templateText, fieldsStr }) {
+  const pemkab = (desa?.kabupaten_kota || 'Pemerintah Kota Medan').toUpperCase();
+  const namaDesa = (desa?.nama_desa || 'Kelurahan Suka Maju').toUpperCase();
+  const kecamatan = (desa?.kecamatan || 'Kecamatan Medan Johor').toUpperCase();
+  const alamat = desa?.alamat || 'Jl. STM No. 40, Kelurahan Suka Maju';
+  const telepon = desa?.telepon || '0823-4123-5734';
+  const kodePos = desa?.kode_pos || '20146';
+  const lurahNama = desa?.nama_lurah || 'Muhammad Iqbal Samosir, S.E., M.A.P.';
+  const lurahNip = desa?.nip_lurah || '198506122010011005';
+  const tahun = new Date().getFullYear();
+
+  const parsedFields = (fieldsStr || '')
+    .split('|')
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((pair) => {
+      const [key, label] = pair.split(':');
+      return { key: (key || '').trim(), label: (label || key || '').trim() };
+    })
+    .filter((x) => x.label);
+
+  return (
+    <div className="rounded-xl border border-cyan-200 bg-slate-100/90 p-3 sm:p-4">
+      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-[11px] font-bold text-cyan-950">
+          <span>📄</span>
+          <span>Live Pratinjau PDF (Format A4 Resmi)</span>
+        </div>
+        <span className="rounded-full bg-cyan-100 border border-cyan-300 px-2 py-0.5 text-[10px] font-bold text-cyan-900">
+          Sorotan biru = isi template yang diubah
+        </span>
+      </div>
+
+      {/* Lembar Kertas A4 Simulasi */}
+      <div className="mx-auto max-w-md rounded border border-slate-300 bg-white p-4 sm:p-5 shadow-sm font-serif text-[10px] leading-relaxed text-slate-900">
+        {/* KOP SURAT */}
+        <div className="border-b-2 border-double border-slate-900 pb-2 mb-2.5 flex items-center gap-2.5">
+          {desa?.logo_url ? (
+            <img src={desa.logo_url} alt="Logo" className="h-10 w-10 object-contain shrink-0" />
+          ) : (
+            <div className="h-10 w-10 rounded border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center text-[8px] font-sans text-slate-400 shrink-0">
+              Logo
+            </div>
+          )}
+          <div className="flex-1 text-center leading-tight">
+            <div className="font-sans text-[9px] font-bold tracking-wider">{pemkab}</div>
+            <div className="font-sans text-[10.5px] font-extrabold tracking-wide">{namaDesa}</div>
+            <div className="font-sans text-[8.5px] font-bold">{kecamatan}</div>
+            <div className="font-sans text-[7.5px] text-slate-600 mt-0.5">
+              {alamat}, Telp. {telepon} • Kode Pos: {kodePos}
+            </div>
+          </div>
+        </div>
+
+        {/* JUDUL & NOMOR */}
+        <div className="text-center my-2">
+          <div className="font-bold uppercase underline text-[10.5px]">
+            {jenisNama || 'NAMA JENIS SURAT'}
+          </div>
+          <div className="font-sans text-[8.5px] text-slate-700">
+            Nomor: 001/{(jenisKode || 'KODE').toUpperCase()}/KEL-SKM/XI/{tahun}
+          </div>
+        </div>
+
+        {/* PEMBUKA */}
+        <p className="mb-1.5 text-justify">
+          Yang bertanda tangan di bawah ini, Lurah {desa?.nama_desa || 'Kelurahan Suka Maju'}, {desa?.kecamatan || 'Kecamatan Medan Johor'}, dengan ini menerangkan bahwa:
+        </p>
+
+        {/* IDENTITAS CONTOH */}
+        <div className="my-1.5 pl-2.5 font-sans text-[9px] space-y-0.5 text-slate-700">
+          <div className="grid grid-cols-3"><span className="text-slate-500">Nama Lengkap</span><span className="col-span-2 font-bold text-slate-900">: Budi Santoso</span></div>
+          <div className="grid grid-cols-3"><span className="text-slate-500">NIK</span><span className="col-span-2">: 3201010101900001</span></div>
+          <div className="grid grid-cols-3"><span className="text-slate-500">Alamat</span><span className="col-span-2">: Jl. STM No. 38 RT 02/RW 03</span></div>
+          {parsedFields.map((pf, idx) => (
+            <div key={idx} className="grid grid-cols-3">
+              <span className="text-slate-500 truncate">{pf.label}</span>
+              <span className="col-span-2 italic text-slate-500">: [Isian {pf.label}]</span>
+            </div>
+          ))}
+        </div>
+
+        {/* BAGIAN TEMPLATE YANG DIUBAH (LIVE HIGHLIGHT) */}
+        <p className="my-2 text-justify">
+          Berdasarkan basis data kependudukan dan hasil verifikasi berkas permohonan, yang bersangkutan{' '}
+          <mark className="rounded bg-cyan-100 px-1 py-0.5 font-semibold text-cyan-950 ring-1 ring-cyan-300">
+            {templateText && templateText.trim()
+              ? templateText
+              : '[Belum diisi — teks klausul template akan tampil di bagian ini]'}
+          </mark>
+        </p>
+
+        {/* PENUTUP */}
+        <p className="mb-3 text-justify">
+          Demikian surat keterangan ini dibuat dengan sebenarnya untuk dapat dipergunakan sebagaimana mestinya.
+        </p>
+
+        {/* TANDA TANGAN LURAH */}
+        <div className="flex items-end justify-between pt-1 font-sans text-[8.5px]">
+          <div className="border border-slate-300 rounded p-1.5 text-[7.5px] text-slate-500 text-center w-16">
+            [QR TTE]
+          </div>
+          <div className="text-center">
+            <div>Medan, {new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div className="font-bold">Lurah {desa?.nama_desa?.replace(/^(Kelurahan|Desa)\s+/i, '') || 'Suka Maju'}</div>
+            <div className="h-7 flex items-center justify-center text-[8px] italic text-slate-400">[TTD Digital]</div>
+            <div className="font-bold underline">{lurahNama}</div>
+            <div className="text-[7.5px] text-slate-500">NIP. {lurahNip}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Jenis() {
   const [js, load] = useGet('/jenis-surat');
+  const [desa] = useGet('/profil-desa');
   const [f, setF] = useState({ kode: '', nama: '', template: '', fields: '' });
   const [ps, setPs] = useState({});
   const [m, setM] = useState();
   const [editTplId, setEditTplId] = useState(null);
+  const [previewPdfId, setPreviewPdfId] = useState(null);
   const [tplText, setTplText] = useState('');
   const [loadingTpl, setLoadingTpl] = useState(false);
   const [konfirmHapusJenis, setKonfirmHapusJenis] = useState(null);
@@ -5853,8 +6010,17 @@ function Jenis() {
       </Card>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        {(js || []).map((j) => (
-          <Card key={j.id} title={
+        {(js || []).map((j) => {
+          const isEditingThis = editTplId === j.id;
+          const isPreviewingThis = previewPdfId === j.id;
+          const showLivePdf = isEditingThis || isPreviewingThis;
+          const fieldsForPreview = Array.isArray(j.form_fields)
+            ? j.form_fields.map((x) => `${x.name || ''}:${x.label || ''}`).join('|')
+            : '';
+
+          return (
+          <div key={j.id} className={showLivePdf ? 'sm:col-span-2' : ''}>
+          <Card title={
             <span className="flex items-center gap-2">
               <span className={`badge text-[11px] ${j.aktif ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
                 {j.aktif ? 'Aktif' : 'Nonaktif'}
@@ -5863,6 +6029,13 @@ function Jenis() {
             </span>
           } rightAction={
             <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                className={`btn text-[11px] py-1 px-2.5 font-semibold ${isPreviewingThis && !isEditingThis ? 'bg-cyan-700 text-white' : 'btn-o text-cyan-800 border-cyan-200 hover:bg-cyan-50'}`}
+                onClick={() => setPreviewPdfId(isPreviewingThis ? null : j.id)}
+              >
+                {isPreviewingThis && !isEditingThis ? 'Tutup Live PDF' : '👁️ Live PDF'}
+              </button>
               <button
                 className={`btn text-[11px] py-1 px-2.5 font-semibold ${j.aktif ? 'btn-o text-slate-700' : 'btn-success'}`}
                 onClick={() => call(() => api.patch(`/admin/jenis-surat/${j.id}/aktif`))}
@@ -5878,99 +6051,120 @@ function Jenis() {
               </button>
             </div>
           }>
-            {/* Box Klausul Template Naskah */}
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs mb-3 space-y-1.5">
-              <div className="flex items-center justify-between text-slate-500 font-semibold text-[11px]">
-                <span>📝 Template Naskah Surat:</span>
-                <button
-                  type="button"
-                  className="text-brand-700 font-bold hover:underline"
-                  onClick={() => {
-                    if (editTplId === j.id) {
-                      setEditTplId(null);
-                    } else {
-                      setEditTplId(j.id);
-                      setTplText(j.template || '');
-                    }
-                  }}
-                >
-                  {editTplId === j.id ? 'Batal Ubah' : '✏️ Ubah template'}
-                </button>
-              </div>
-
-              {editTplId === j.id ? (
-                <div className="pt-1.5 space-y-2">
-                  <textarea
-                    className="inp text-xs"
-                    rows={3}
-                    value={tplText}
-                    onChange={(e) => setTplText(e.target.value)}
-                    placeholder="Tuliskan klausul resmi naskah surat..."
-                  />
-                  <div className="flex justify-end gap-2">
+            <div className={showLivePdf ? 'grid gap-4 lg:grid-cols-12 items-start' : ''}>
+              <div className={showLivePdf ? 'lg:col-span-5' : ''}>
+                {/* Box Klausul Template Naskah */}
+                <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-xs mb-3 space-y-1.5">
+                  <div className="flex items-center justify-between text-slate-500 font-semibold text-[11px]">
+                    <span>📝 Template Naskah Surat:</span>
                     <button
                       type="button"
-                      className="btn btn-o text-[11px] py-1 px-2"
-                      onClick={() => setEditTplId(null)}
+                      className="text-brand-700 font-bold hover:underline"
+                      onClick={() => {
+                        if (isEditingThis) {
+                          setEditTplId(null);
+                        } else {
+                          setEditTplId(j.id);
+                          setTplText(j.template || '');
+                        }
+                      }}
                     >
-                      Batal
-                    </button>
-                    <button
-                      type="button"
-                      className="btn btn-p text-[11px] py-1 px-3 font-bold"
-                      disabled={loadingTpl}
-                      onClick={() => simpanTemplate(j.id)}
-                    >
-                      {loadingTpl ? 'Menyimpan…' : 'Simpan Template'}
+                      {isEditingThis ? 'Batal Ubah' : '✏️ Ubah template'}
                     </button>
                   </div>
-                </div>
-              ) : (
-                <p className="text-slate-700 italic bg-white p-2 rounded border border-slate-200/70 text-[11px] leading-relaxed">
-                  &ldquo;{j.template || 'Belum diatur (menggunakan template default sistem).'}&rdquo;
-                </p>
-              )}
-            </div>
 
-            {/* Persyaratan Berkas */}
-            <div className="text-xs mb-2 font-semibold text-slate-600">📋 Dokumen Persyaratan:</div>
-            <ul className="mb-3 text-xs space-y-1">
-              {(j.persyaratan || []).map((p) => (
-                <li key={p.id} className="flex justify-between items-center border-b border-slate-100 py-1.5 group">
-                  <span className="text-slate-700">• {p.nama}</span>
+                  {isEditingThis ? (
+                    <div className="pt-1.5 space-y-2">
+                      <textarea
+                        className="inp text-xs"
+                        rows={5}
+                        value={tplText}
+                        onChange={(e) => setTplText(e.target.value)}
+                        placeholder="Tuliskan klausul resmi naskah surat..."
+                      />
+                      <div className="text-[11px] text-slate-500">
+                        Ketik langsung di atas — bagian yang disorot biru di sebelah kanan akan berubah secara langsung.
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          className="btn btn-o text-[11px] py-1 px-2"
+                          onClick={() => setEditTplId(null)}
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-p text-[11px] py-1 px-3 font-bold"
+                          disabled={loadingTpl}
+                          onClick={() => simpanTemplate(j.id)}
+                        >
+                          {loadingTpl ? 'Menyimpan…' : 'Simpan Template'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-slate-700 italic bg-white p-2 rounded border border-slate-200/70 text-[11px] leading-relaxed">
+                      &ldquo;{j.template || 'Belum diatur (menggunakan template default sistem).'}&rdquo;
+                    </p>
+                  )}
+                </div>
+
+                {/* Persyaratan Berkas */}
+                <div className="text-xs mb-2 font-semibold text-slate-600">📋 Dokumen Persyaratan:</div>
+                <ul className="mb-3 text-xs space-y-1">
+                  {(j.persyaratan || []).map((p) => (
+                    <li key={p.id} className="flex justify-between items-center border-b border-slate-100 py-1.5 group">
+                      <span className="text-slate-700">• {p.nama}</span>
+                      <button
+                        className="text-rose-600 font-semibold text-[11px] hover:underline opacity-70 group-hover:opacity-100 transition-opacity"
+                        onClick={() => call(() => api.delete('/admin/persyaratan/' + p.id))}
+                      >
+                        🗑️ Hapus
+                      </button>
+                    </li>
+                  ))}
+                  {!(j.persyaratan || []).length && (
+                    <li className="text-[11px] text-slate-400 italic py-1">Belum ada persyaratan dokumen khusus.</li>
+                  )}
+                </ul>
+                <div className="flex gap-2">
+                  <input
+                    className="inp text-xs flex-1"
+                    placeholder="Nama berkas persyaratan (contoh: KTP / KK)"
+                    value={ps[j.id] || ''}
+                    onChange={(e) => setPs({ ...ps, [j.id]: e.target.value })}
+                  />
                   <button
-                    className="text-rose-600 font-semibold text-[11px] hover:underline opacity-70 group-hover:opacity-100 transition-opacity"
-                    onClick={() => call(() => api.delete('/admin/persyaratan/' + p.id))}
+                    className="btn btn-p text-xs py-1.5 px-3 flex-shrink-0"
+                    onClick={() =>
+                      call(async () => {
+                        await api.post('/admin/persyaratan', { jenis_surat_id: j.id, nama: ps[j.id] });
+                        setPs({ ...ps, [j.id]: '' });
+                      })
+                    }
                   >
-                    🗑️ Hapus
+                    + Tambah
                   </button>
-                </li>
-              ))}
-              {!(j.persyaratan || []).length && (
-                <li className="text-[11px] text-slate-400 italic py-1">Belum ada persyaratan dokumen khusus.</li>
+                </div>
+              </div>
+
+              {showLivePdf && (
+                <div className="lg:col-span-7">
+                  <LiveTemplatePdfPreview
+                    desa={desa}
+                    jenisNama={j.nama}
+                    jenisKode={j.kode}
+                    templateText={isEditingThis ? tplText : j.template}
+                    fieldsStr={fieldsForPreview}
+                  />
+                </div>
               )}
-            </ul>
-            <div className="flex gap-2">
-              <input
-                className="inp text-xs flex-1"
-                placeholder="Nama berkas persyaratan (contoh: KTP / KK)"
-                value={ps[j.id] || ''}
-                onChange={(e) => setPs({ ...ps, [j.id]: e.target.value })}
-              />
-              <button
-                className="btn btn-p text-xs py-1.5 px-3 flex-shrink-0"
-                onClick={() =>
-                  call(async () => {
-                    await api.post('/admin/persyaratan', { jenis_surat_id: j.id, nama: ps[j.id] });
-                    setPs({ ...ps, [j.id]: '' });
-                  })
-                }
-              >
-                + Tambah
-              </button>
             </div>
           </Card>
-        ))}
+          </div>
+          );
+        })}
       </div>
     </div>
   );
