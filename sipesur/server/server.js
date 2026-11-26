@@ -480,7 +480,12 @@ app.put(
   ah(async (req, res) => {
     const b = req.body;
     if (!b.nama || b.nama.trim().length < 3) throw fail(400, 'Nama minimal 3 karakter.');
-    await q('UPDATE users SET nama=? WHERE id=?', [b.nama.trim(), req.user.id]);
+    const emailVal = b.email ? b.email.trim().toLowerCase() : null;
+    if (emailVal) {
+      const existing = await q('SELECT id FROM users WHERE email=? AND id!=?', [emailVal, req.user.id]);
+      if (existing.length) throw fail(400, 'Email ini sudah digunakan oleh akun lain.');
+    }
+    await q('UPDATE users SET nama=?, email=? WHERE id=?', [b.nama.trim(), emailVal, req.user.id]);
     await q(
       'UPDATE warga SET tempat_lahir=?,tanggal_lahir=?,jenis_kelamin=?,alamat=?,pekerjaan=?,telepon=? WHERE user_id=?',
       [

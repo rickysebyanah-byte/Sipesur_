@@ -595,16 +595,17 @@ function Landing() {
             {heroSlides.map((src, idx) => {
               const active = idx === (heroIdx % heroSlides.length);
               return (
-                <div
+                <img
                   key={idx}
-                  className={`absolute inset-0 bg-cover bg-center transition-all duration-[2000ms] ease-in-out ${
-                    active ? 'opacity-45 scale-105' : 'opacity-0 scale-100'
+                  src={src}
+                  alt=""
+                  className={`absolute inset-0 h-full w-full object-cover transition-all duration-[2000ms] ease-in-out ${
+                    active ? 'opacity-100 scale-105' : 'opacity-0 scale-100'
                   }`}
-                  style={{ backgroundImage: `url("${src}")` }}
                 />
               );
             })}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#0f2340]/85 via-[#1a3a5c]/75 to-[#0f2340]/85" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0f2340]/75 via-[#1a3a5c]/60 to-[#0f2340]/75" />
           </div>
 
           <div className="relative z-10 mx-auto max-w-6xl px-4 py-14 sm:py-20">
@@ -5329,6 +5330,16 @@ function Profil() {
                   <input className="inp" value={f.telepon || ''} onChange={set('telepon')} />
                 </Field>
               </div>
+
+              <Field l="Email" hint="Untuk notifikasi status permohonan surat">
+                <input
+                  className="inp"
+                  type="email"
+                  placeholder="email@contoh.com"
+                  value={f.email || ''}
+                  onChange={set('email')}
+                />
+              </Field>
 
               <Msg m={m} />
               <button className="btn btn-p">Simpan Perubahan Profil</button>
