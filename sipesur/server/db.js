@@ -474,7 +474,13 @@ function executeLocalSql(sql, params = []) {
   }
 
   // 3a. VERIFIKASI WARGA: SELECT users u JOIN warga w
-  if (upper.includes('FROM USERS U') && upper.includes('JOIN WARGA W')) {
+  if (
+    upper.includes('FROM USERS U') &&
+    upper.includes('JOIN WARGA W') &&
+    !upper.includes('EMAIL = ?') &&
+    !upper.includes('USERNAME = ?') &&
+    !upper.includes('NIP = ?')
+  ) {
     let wargaUsers = (dbData.users || []).filter((u) => u.role === 'warga');
 
     if (upper.includes('U.STATUS_VERIFIKASI = ?') || upper.includes('STATUS_VERIFIKASI = ?')) {
@@ -575,8 +581,19 @@ function executeLocalSql(sql, params = []) {
     const uid = Number(params[params.length - 1]);
     const u = (dbData.users || []).find((x) => x.id === uid);
     if (u && params.length >= 2) {
-      if (upper.includes('SET NAMA=?') && params.length === 2) {
+      if (upper.includes('SET NAMA=?, EMAIL=?')) {
         u.nama = params[0];
+        u.email = params[1];
+      } else if (upper.includes('SET NAMA=?') && params.length === 2) {
+        u.nama = params[0];
+      } else if (upper.includes('SET RESET_TOKEN=?, RESET_EXPIRES_AT=?')) {
+        u.reset_token = params[0];
+        u.reset_expires_at = params[1];
+      } else if (upper.includes('SET PASSWORD=?')) {
+        u.password = params[0];
+        u.must_change_password = 0;
+        u.reset_token = null;
+        u.reset_expires_at = null;
       }
       saveLocalDb();
     }
@@ -863,6 +880,7 @@ function executeLocalSql(sql, params = []) {
       path: params[3],
       file_path: params[3],
       mime: params[4],
+      file_data: params[5] || null,
       created_at: new Date().toISOString(),
     };
     dbData.dokumen.push(newRow);

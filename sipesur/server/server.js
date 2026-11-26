@@ -9,6 +9,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 import db from './db.js';
 import { buatPdf, buatPdfSuratDinas } from './pdf.js';
 
@@ -53,8 +54,56 @@ const log = async (req, aksi, detail = '', customUserId = undefined) => {
   }
 };
 
-const notif = (uid, pesan) =>
-  q('INSERT INTO notifikasi(user_id,pesan) VALUES(?,?)', [uid, pesan]);
+const getMailer = () => {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) return null;
+  return nodemailer.createTransport({
+    host,
+    port: Number(process.env.SMTP_PORT || 587),
+    secure: String(process.env.SMTP_SECURE || '').toLowerCase() === 'true' || Number(process.env.SMTP_PORT) === 465,
+    auth: { user, pass },
+  });
+};
+
+const sendEmailNotification = async (to, subject, html) => {
+  if (!to) return { sent: false, reason: 'NO_RECIPIENT' };
+  const transporter = getMailer();
+  if (!transporter) return { sent: false, reason: 'SMTP_NOT_CONFIGURED' };
+  try {
+    const from = process.env.SMTP_FROM || `"SIPESUR Kelurahan Suka Maju" <${process.env.SMTP_USER}>`;
+    await transporter.sendMail({ from, to, subject, html });
+    return { sent: true };
+  } catch (err) {
+    console.warn('[SMTP] Gagal mengirim email:', err?.message || err);
+    return { sent: false, reason: err?.message || 'SEND_ERROR' };
+  }
+};
+
+const notif = async (uid, pesan) => {
+  const res = await q('INSERT INTO notifikasi(user_id,pesan) VALUES(?,?)', [uid, pesan]);
+  // Kirim notifikasi email otomatis jika SMTP dikonfigurasi & pengguna memiliki email
+  if (getMailer()) {
+    q('SELECT nama, email FROM users WHERE id=?', [uid])
+      .then(([u]) => {
+        if (u?.email) {
+          return sendEmailNotification(
+            u.email,
+            'Notifikasi Layanan Surat — SIPESUR Kelurahan Suka Maju',
+            `<div style="font-family:sans-serif;max-width:560px;margin:auto;padding:20px;border:1px solid #e2e8f0;border-radius:12px;">
+              <h2 style="color:#1a3a5c;margin:0 0 12px;">SIPESUR · Kelurahan Suka Maju</h2>
+              <p>Yth. <strong>${u.nama || 'Warga'}</strong>,</p>
+              <p style="background:#f8fafc;padding:12px 16px;border-left:4px solid #c8a84b;border-radius:6px;color:#1e293b;">${pesan}</p>
+              <p style="font-size:12px;color:#64748b;margin-top:16px;">Silakan masuk ke portal <a href="${CLIENT}">${CLIENT}</a> untuk melihat detail atau mengunduh surat Anda.</p>
+            </div>`
+          );
+        }
+      })
+      .catch(() => {});
+  }
+  return res;
+};
 
 const notifRole = (r, pesan) =>
   q('INSERT INTO notifikasi(user_id,pesan) SELECT id,? FROM users WHERE role=? AND aktif=1', [pesan, r]);
@@ -165,7 +214,22 @@ const move = async (id, from, to, catatan) => {
   if (!r.affectedRows) throw fail(409, 'Status pengajuan tidak sesuai untuk aksi ini');
 };
 
+let dokumenFileDataReady = false;
+async function ensureDokumenFileDataCol() {
+  if (dokumenFileDataReady || db.isLocalMode()) {
+    dokumenFileDataReady = true;
+    return;
+  }
+  try {
+    await q('ALTER TABLE dokumen ADD COLUMN IF NOT EXISTS file_data TEXT');
+  } catch {
+    // Ignore if column already exists or insufficient DDL permission
+  }
+  dokumenFileDataReady = true;
+}
+
 async function saveDocs(files, pid, jid) {
+  await ensureDokumenFileDataCol();
   const syar = await q('SELECT id FROM persyaratan WHERE jenis_surat_id=?', [jid]);
   for (const f of files) {
     const s = syar.find((x) => 'doc_' + x.id === f.fieldname);
@@ -174,11 +238,23 @@ async function saveDocs(files, pid, jid) {
       continue;
     }
     const oldDocs = await q('SELECT path FROM dokumen WHERE pengajuan_id=? AND persyaratan_id=?', [pid, s.id]);
-    oldDocs.forEach((o) => fs.unlink(o.path, () => { }));
+    oldDocs.forEach((o) => { if (o.path) fs.unlink(o.path, () => { }); });
     await q('DELETE FROM dokumen WHERE pengajuan_id=? AND persyaratan_id=?', [pid, s.id]);
+
+    // Simpan isi berkas sebagai data URL base64 agar tetap persisten di serverless Vercel (/tmp bersifat sementara)
+    let fileData = null;
+    try {
+      const buf = fs.readFileSync(f.path);
+      if (buf.length <= 4 * 1024 * 1024) {
+        fileData = `data:${f.mimetype || 'application/octet-stream'};base64,${buf.toString('base64')}`;
+      }
+    } catch {
+      fileData = null;
+    }
+
     await q(
-      'INSERT INTO dokumen(pengajuan_id,persyaratan_id,nama_file,path,mime) VALUES(?,?,?,?,?)',
-      [pid, s.id, f.originalname, f.path, f.mimetype]
+      'INSERT INTO dokumen(pengajuan_id,persyaratan_id,nama_file,path,mime,file_data) VALUES(?,?,?,?,?,?)',
+      [pid, s.id, f.originalname, f.path, f.mimetype, fileData]
     );
   }
 }
@@ -361,7 +437,7 @@ app.post(
       [identifier, identifier, identifier, identifier]
     );
 
-    if (!u || !(await bcrypt.compare(password, u.password))) {
+    if (!u || !u.password || !(await bcrypt.compare(password, u.password))) {
       throw fail(401, 'Kredensial salah: NIK / NIP / Username / Email atau password tidak cocok.');
     }
 
@@ -413,6 +489,136 @@ app.post(
           ? 'Akun Anda sedang Menunggu Verifikasi oleh petugas. Layanan pengajuan surat akan aktif setelah akun diverifikasi.'
           : null,
     });
+  })
+);
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'sipesur-api',
+    db_mode: db.isLocalMode() ? 'local' : 'supabase',
+    smtp_configured: Boolean(getMailer()),
+  });
+});
+
+let resetColsReady = false;
+async function ensureResetColumns() {
+  if (resetColsReady || db.isLocalMode()) {
+    resetColsReady = true;
+    return;
+  }
+  try {
+    await q('ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(20), ADD COLUMN IF NOT EXISTS reset_expires_at TIMESTAMPTZ');
+  } catch {
+    // Ignore if already exists
+  }
+  resetColsReady = true;
+}
+
+app.post(
+  '/api/auth/forgot-password',
+  loginLimit,
+  ah(async (req, res) => {
+    const identifier = String(req.body?.identifier || '').trim();
+    if (!identifier) throw fail(400, 'Masukkan NIK, Username, NIP, atau Email akun Anda.');
+
+    await ensureResetColumns();
+
+    const [u] = await q(
+      `SELECT u.*, w.nik
+       FROM users u
+       LEFT JOIN warga w ON w.user_id = u.id
+       WHERE u.email = ? OR u.username = ? OR u.nip = ? OR w.nik = ?`,
+      [identifier, identifier, identifier, identifier]
+    );
+
+    if (!u || !u.aktif) {
+      throw fail(404, 'Akun dengan identitas tersebut tidak ditemukan atau sedang nonaktif.');
+    }
+
+    const otp = String(crypto.randomInt(100000, 999999));
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+    await q('UPDATE users SET reset_token=?, reset_expires_at=? WHERE id=?', [otp, expiresAt, u.id]);
+
+    let smtpSent = false;
+    if (u.email && getMailer()) {
+      const mailRes = await sendEmailNotification(
+        u.email,
+        'Kode Reset Kata Sandi — SIPESUR Kelurahan Suka Maju',
+        `<div style="font-family:sans-serif;max-width:520px;margin:auto;padding:20px;border:1px solid #e2e8f0;border-radius:12px;">
+          <h2 style="color:#1a3a5c;margin:0 0 12px;">Reset Kata Sandi SIPESUR</h2>
+          <p>Halo <strong>${u.nama}</strong>,</p>
+          <p>Gunakan kode verifikasi berikut untuk mengatur ulang kata sandi akun Anda (berlaku 15 menit):</p>
+          <div style="font-size:28px;font-weight:bold;letter-spacing:6px;text-align:center;background:#f1f5f9;color:#1a3a5c;padding:14px;border-radius:8px;margin:16px 0;">${otp}</div>
+          <p style="font-size:12px;color:#64748b;">Abaikan email ini jika Anda tidak meminta reset kata sandi.</p>
+        </div>`
+      );
+      smtpSent = mailRes.sent;
+    }
+
+    const maskEmail = (em) => {
+      if (!em || !em.includes('@')) return null;
+      const [l, d] = em.split('@');
+      return `${l.slice(0, 2)}***@${d}`;
+    };
+
+    const payload = {
+      message: smtpSent
+        ? `Kode verifikasi (6 digit) telah dikirim ke email ${maskEmail(u.email)}. Berlaku 15 menit.`
+        : u.email
+          ? `Kode reset dibuat, namun layanan email SMTP belum aktif di server. Hubungi Admin IT atau aktifkan SMTP untuk pengiriman otomatis.`
+          : 'Akun ini belum memiliki alamat email terdaftar. Silakan hubungi petugas/Admin IT kelurahan untuk reset kata sandi.',
+      smtp_sent: smtpSent,
+      email_masked: maskEmail(u.email),
+    };
+
+    if (!smtpSent && !process.env.VERCEL && process.env.NODE_ENV !== 'production') {
+      payload.dev_otp = otp;
+    }
+
+    await log(req, 'REQUEST_RESET_PASSWORD', `user_id=${u.id}`);
+    res.json(payload);
+  })
+);
+
+app.post(
+  '/api/auth/reset-password',
+  loginLimit,
+  ah(async (req, res) => {
+    const identifier = String(req.body?.identifier || '').trim();
+    const token = String(req.body?.token || '').trim();
+    const newPassword = String(req.body?.new_password || '');
+
+    if (!identifier || !token || !newPassword) {
+      throw fail(400, 'Identitas akun, kode OTP, dan kata sandi baru wajib diisi.');
+    }
+    if (newPassword.length < 6) {
+      throw fail(400, 'Kata sandi baru minimal 6 karakter.');
+    }
+
+    await ensureResetColumns();
+
+    const [u] = await q(
+      `SELECT u.*, w.nik
+       FROM users u
+       LEFT JOIN warga w ON w.user_id = u.id
+       WHERE u.email = ? OR u.username = ? OR u.nip = ? OR w.nik = ?`,
+      [identifier, identifier, identifier, identifier]
+    );
+
+    if (!u || !u.reset_token || u.reset_token !== token) {
+      throw fail(400, 'Kode verifikasi tidak valid.');
+    }
+    if (!u.reset_expires_at || new Date(u.reset_expires_at).getTime() < Date.now()) {
+      throw fail(400, 'Kode verifikasi sudah kedaluwarsa. Silakan minta kode baru.');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await q('UPDATE users SET password=?, reset_token=NULL, reset_expires_at=NULL WHERE id=?', [hashed, u.id]);
+    req.user = u;
+    await log(req, 'RESET_PASSWORD', `user_id=${u.id}`);
+
+    res.json({ message: 'Kata sandi berhasil diperbarui. Silakan login dengan kata sandi baru Anda.' });
   })
 );
 
@@ -547,10 +753,10 @@ const handleHapusAkunSendiri = async (req, res) => {
       }
     }
     // Bersihkan berkas fisik dokumen persyaratan jika ada
-    const doks = await q('SELECT file_path FROM dokumen WHERE pengajuan_id=?', [p.id]);
+    const doks = await q('SELECT path FROM dokumen WHERE pengajuan_id=?', [p.id]);
     for (const d of doks) {
-      if (d.file_path && fs.existsSync(d.file_path)) {
-        try { fs.unlinkSync(d.file_path); } catch (_) {}
+      if (d.path && fs.existsSync(d.path)) {
+        try { fs.unlinkSync(d.path); } catch (_) {}
       }
     }
 
@@ -1697,20 +1903,27 @@ app.get(
     if (!d) throw fail(404, 'Dokumen tidak ditemukan');
     if (req.user.role === 'warga' && d.user_id !== req.user.id) throw fail(403, 'Akses ditolak');
 
+    const mime = d.mime || (d.nama_file?.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(d.nama_file || 'dokumen')}"`);
+
     let filePath = d.path ? path.resolve(d.path) : null;
     if (!filePath || !fs.existsSync(filePath)) {
-      // Coba cari di folder uploads dengan nama file
       const fallback = path.join(DATA_DIR, 'uploads', path.basename(d.path || ''));
       if (fs.existsSync(fallback)) {
         filePath = fallback;
+      } else if (d.file_data && String(d.file_data).startsWith('data:')) {
+        const commaIdx = d.file_data.indexOf(',');
+        const b64 = commaIdx >= 0 ? d.file_data.slice(commaIdx + 1) : '';
+        if (b64) {
+          return res.send(Buffer.from(b64, 'base64'));
+        }
+        throw fail(404, 'Berkas fisik dokumen persyaratan tidak ditemukan di server.');
       } else {
         throw fail(404, 'Berkas fisik dokumen persyaratan tidak ditemukan di server.');
       }
     }
 
-    const mime = d.mime || (d.nama_file?.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg');
-    res.setHeader('Content-Type', mime);
-    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(d.nama_file || 'dokumen')}"`);
     res.sendFile(filePath);
   })
 );

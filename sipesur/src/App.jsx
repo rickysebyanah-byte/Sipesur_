@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, createContext, useContext } from 'react';
+import { useState, useEffect, useCallback, createContext, useContext, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link, NavLink, Outlet, useNavigate, useParams, useLocation } from 'react-router-dom';
 import api, { openBlob, downloadPdf, viewPdf, getFileUrl } from './api';
 import SignaturePad from './components/SignaturePad';
-import ModalCetakSurat from './components/ModalCetakSurat';
-import ProfilDesa from './components/ProfilDesa';
-import ModalPersetujuanLurah from './components/ModalPersetujuanLurah';
+const ModalCetakSurat = lazy(() => import('./components/ModalCetakSurat'));
+const ProfilDesa = lazy(() => import('./components/ProfilDesa'));
+const ModalPersetujuanLurah = lazy(() => import('./components/ModalPersetujuanLurah'));
 
 const Ctx = createContext();
 const useAuth = () => useContext(Ctx);
@@ -1323,6 +1323,12 @@ function Login() {
                 </div>
               </Field>
 
+              <div className="flex justify-end -mt-1">
+                <Link to="/lupa-password" className="text-xs font-semibold text-[#1a3a5c] hover:underline">
+                  Lupa kata sandi?
+                </Link>
+              </div>
+
               <Msg m={m} />
 
               <button
@@ -1333,29 +1339,31 @@ function Login() {
               </button>
             </form>
 
-            {/* Isi Cepat Demo */}
-            <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-              <div className="flex flex-wrap items-center justify-between gap-1 mb-2.5">
-                <span className="text-xs font-bold text-slate-700">⚡ Isi Cepat — Akun Demo</span>
-                <span className="text-[11px] text-slate-500">Password: <code className="font-mono font-bold text-slate-700">Password123</code></span>
+            {/* Isi Cepat Demo (bisa disembunyikan di produksi dengan VITE_HIDE_DEMO_ACCOUNTS=true) */}
+            {import.meta.env.VITE_HIDE_DEMO_ACCOUNTS !== 'true' && (
+              <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-1 mb-2.5">
+                  <span className="text-xs font-bold text-slate-700">⚡ Isi Cepat — Akun Demo</span>
+                  <span className="text-[11px] text-slate-500">Password: <code className="font-mono font-bold text-slate-700">Password123</code></span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {quickAccounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => { setF({ identifier: acc.id, password: 'Password123' }); setM(null); }}
+                      className={`rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-colors ${acc.cls}`}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>{acc.icon}</span>
+                        <span>{acc.label}</span>
+                      </div>
+                      <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-70">{acc.id}</div>
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {quickAccounts.map((acc) => (
-                  <button
-                    key={acc.id}
-                    type="button"
-                    onClick={() => { setF({ identifier: acc.id, password: 'Password123' }); setM(null); }}
-                    className={`rounded-lg border px-2.5 py-2 text-left text-xs font-bold transition-colors ${acc.cls}`}
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span>{acc.icon}</span>
-                      <span>{acc.label}</span>
-                    </div>
-                    <div className="mt-0.5 truncate font-mono text-[10px] font-normal opacity-70">{acc.id}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            )}
 
             <div className="mt-4 text-center text-xs text-slate-500 pt-3 border-t border-slate-100">
               Belum punya akun?{' '}
@@ -1947,6 +1955,134 @@ function Verifikasi() {
             </Link>
           </div>
         </div>
+      )}
+    </Center>
+  );
+}
+
+function LupaPassword() {
+  const nav = useNavigate();
+  const [step, setStep] = useState(1);
+  const [identifier, setIdentifier] = useState('');
+  const [token, setToken] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [m, setM] = useState(null);
+  const [devOtp, setDevOtp] = useState(null);
+
+  const requestReset = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setM(null);
+    setDevOtp(null);
+    try {
+      const { data } = await api.post('/auth/forgot-password', { identifier });
+      setM({ ok: 1, t: data.message });
+      if (data.dev_otp) setDevOtp(data.dev_otp);
+      setStep(2);
+    } catch (err) {
+      setM({ t: em(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitReset = async (e) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      setM({ t: 'Konfirmasi kata sandi tidak cocok.' });
+      return;
+    }
+    setLoading(true);
+    setM(null);
+    try {
+      const { data } = await api.post('/auth/reset-password', {
+        identifier,
+        token,
+        new_password: newPassword,
+      });
+      setM({ ok: 1, t: data.message });
+      setTimeout(() => nav('/login'), 1600);
+    } catch (err) {
+      setM({ t: em(err) });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Center title="Reset Kata Sandi" subtitle="Pulihkan akses akun SIPESUR Anda">
+      {step === 1 ? (
+        <form onSubmit={requestReset} className="space-y-4">
+          <Field l="NIK / NIP / Username / Email" req>
+            <input
+              className="inp"
+              placeholder="Masukkan identitas akun Anda"
+              required
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+            />
+          </Field>
+          <Msg m={m} />
+          <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
+            {loading ? 'Mengirim kode verifikasi…' : 'Kirim Kode Reset Password'}
+          </button>
+          <div className="text-center text-xs pt-2">
+            <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
+              ← Kembali ke Halaman Login
+            </Link>
+          </div>
+        </form>
+      ) : (
+        <form onSubmit={submitReset} className="space-y-4">
+          <Msg m={m} />
+          {devOtp && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+              Mode Lokal (SMTP belum dikonfigurasi): Kode OTP Anda adalah <strong className="font-mono text-sm">{devOtp}</strong>
+            </div>
+          )}
+          <Field l="Kode Verifikasi (6 Digit)" req>
+            <input
+              className="inp font-mono tracking-widest"
+              placeholder="123456"
+              required
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+            />
+          </Field>
+          <Field l="Kata Sandi Baru (Minimal 6 karakter)" req>
+            <input
+              className="inp"
+              type="password"
+              minLength={6}
+              required
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </Field>
+          <Field l="Konfirmasi Kata Sandi Baru" req>
+            <input
+              className="inp"
+              type="password"
+              minLength={6}
+              required
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+            />
+          </Field>
+          <button className="btn btn-p w-full py-2.5 font-bold" disabled={loading}>
+            {loading ? 'Menyimpan kata sandi…' : 'Simpan Kata Sandi Baru'}
+          </button>
+          <div className="flex items-center justify-between text-xs pt-1">
+            <button type="button" onClick={() => { setStep(1); setM(null); }} className="text-slate-500 hover:underline">
+              Minta kode ulang
+            </button>
+            <Link to="/login" className="text-[#1a3a5c] font-semibold hover:underline">
+              Ke Halaman Login
+            </Link>
+          </div>
+        </form>
       )}
     </Center>
   );
@@ -7745,9 +7881,11 @@ export default function App() {
   return (
     <Provider>
       <BrowserRouter>
-        <Routes>
+        <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-sm text-slate-500">Memuat halaman…</div>}>
+          <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/lupa-password" element={<LupaPassword />} />
           <Route path="/register" element={<Register />} />
           <Route path="/verifikasi/:kode" element={<Verifikasi />} />
           <Route path="/cek-status" element={<CekStatusPublic />} />
@@ -7882,7 +8020,8 @@ export default function App() {
             />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
-        </Routes>
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </Provider>
   );

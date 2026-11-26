@@ -10,4 +10,14 @@ export default defineConfig({
       '/api': 'http://localhost:5000',
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'utils-vendor': ['axios', 'qrcode'],
+        },
+      },
+    },
+  },
 });
