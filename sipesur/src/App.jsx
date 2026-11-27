@@ -112,7 +112,6 @@ const MENU = {
     ['/app/ajukan', 'Ajukan Surat'],
     ['/app/pengajuan', 'Pengajuan Saya'],
     ['/app/surat', 'Surat Saya'],
-    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/profil', 'Profil Saya'],
   ],
   petugas: [
