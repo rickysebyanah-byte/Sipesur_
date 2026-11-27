@@ -6,7 +6,6 @@ const ModalCetakSurat = lazy(() => import('./components/ModalCetakSurat'));
 const ProfilDesa = lazy(() => import('./components/ProfilDesa'));
 const ModalPersetujuanLurah = lazy(() => import('./components/ModalPersetujuanLurah'));
 const AccessibilityPanel = lazy(() => import('./components/AccessibilityPanel'));
-const PetaKelurahan = lazy(() => import('./components/PetaKelurahan'));
 
 const Ctx = createContext();
 const useAuth = () => useContext(Ctx);
@@ -121,7 +120,6 @@ const MENU = {
     ['/app/surat-masuk', 'Surat Masuk'],
     ['/app/surat-keluar', 'Surat Keluar'],
     ['/app/arsip', 'Arsip Surat'],
-    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/berita', 'Berita & Info'],
     ['/app/galeri', 'Galeri Dokumentasi'],
   ],
@@ -132,7 +130,6 @@ const MENU = {
     ['/app/surat-keluar', 'Surat Keluar'],
     ['/app/arsip', 'Arsip Surat'],
     ['/app/anggaran', 'Anggaran'],
-    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/profil', 'Profil & TTE'],
   ],
   admin: [
@@ -140,7 +137,6 @@ const MENU = {
     ['/app/pengguna', 'Pengguna & Peran'],
     ['/app/jenis', 'Master Jenis Surat'],
     ['/app/profil-desa', 'Konfigurasi Portal'],
-    ['/app/peta', '🗺️ Peta Kelurahan'],
     ['/app/galeri', 'Galeri Dokumentasi'],
     ['/app/log', 'Log Aktivitas'],
     ['/app/profil', 'Profil Admin'],
@@ -494,7 +490,6 @@ function Landing() {
     { id: 'umkm', label: '🏪 UMKM' },
     { id: 'anggaran', label: '💰 Anggaran' },
     { id: 'kontak', label: '📞 Kontak' },
-    { id: 'peta-link', label: '🗺️ Peta', href: '/peta' },
   ];
 
   const scrollTo = (id) => {
@@ -8121,45 +8116,6 @@ function TransparansiAnggaranPublic() {
   );
 }
 
-// ── Halaman Peta Interaktif (wrapper dalam app layout) ──────────────────────
-function PetaPage() {
-  const { user } = useAuth();
-  const canEdit = ['admin', 'petugas'].includes(user?.role);
-  const [umkm, setUmkm] = useState([]);
-
-  useEffect(() => {
-    // Muat daftar UMKM untuk pin di peta
-    api.get('/umkm').then(r => {
-      if (Array.isArray(r.data)) setUmkm(r.data);
-    }).catch(() => {});
-  }, []);
-
-  return (
-    <div>
-      <PetaKelurahan mode="app" canEdit={canEdit} umkmList={umkm} />
-    </div>
-  );
-}
-
-// ── Halaman Peta Publik (tanpa login) ───────────────────────────────────────
-function PetaPublic() {
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="bg-[#1a3a5c] text-white py-3 px-4 text-center">
-        <p className="text-sm">🏛️ Peta Interaktif Kelurahan Suka Maju</p>
-      </div>
-      <div className="max-w-6xl mx-auto px-4 py-6">
-        <PetaKelurahan mode="public" canEdit={false} />
-        <div className="mt-4 text-center">
-          <Link to="/" className="text-sm text-[#1a3a5c] hover:underline">
-            ← Kembali ke Portal Kelurahan
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function App() {
   return (
     <Provider>
@@ -8173,7 +8129,6 @@ export default function App() {
           <Route path="/verifikasi/:kode" element={<Verifikasi />} />
           <Route path="/cek-status" element={<CekStatusPublic />} />
           <Route path="/anggaran" element={<TransparansiAnggaranPublic />} />
-          <Route path="/peta" element={<PetaPublic />} />
           <Route path="/app" element={<Guard />}>
             <Route index element={<Dashboard />} />
             <Route
@@ -8278,7 +8233,6 @@ export default function App() {
               }
             />
             <Route path="notifikasi" element={<Notifikasi />} />
-            <Route path="peta" element={<PetaPage />} />
             <Route
               path="pengguna"
               element={
